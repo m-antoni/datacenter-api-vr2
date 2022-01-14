@@ -32,7 +32,7 @@ class App {
 
     private initialiseControllers(controllers: Controller[]): void {
         controllers.forEach((controller: Controller) => {
-            this.express.use('/api', controller.router);
+            this.express.use('/api/v1', controller.router);
         });
     }
 
@@ -41,11 +41,13 @@ class App {
     }
 
     private initialiseDatabaseConnection(): void {
+
         const { MONGO_USER, MONGO_PASSWORD, MONGO_PATH } = process.env;
+        
+        // mongoose.connect(`mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}${MONGO_PATH}`);
+        mongoose.connect(`mongodb://localhost:27017/datacenterdb`);
 
-        mongoose.connect(`mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}${MONGO_PATH}`);
-
-        console.log('MongoDB Connected')
+        console.log('MongoDB Connected');
     }
 
     public listen(): void {
