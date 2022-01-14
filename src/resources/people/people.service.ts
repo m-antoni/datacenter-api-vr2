@@ -1,5 +1,6 @@
 import PeopleModel from '@/resources/people/people.model';
 import People from '@/resources/people/people.interface';
+import SearchByCountry from './interfaces/people.searchbycountry.interface';
 
 interface ExactContinent {
     exact: string | undefined
@@ -135,75 +136,82 @@ class PeopleService {
 
     
     /** Search User by Countries  */
-    public async searchUserByCountryService(search_country: string): Promise<Object> {
+    public async searchUserByCountryService(args: SearchByCountry): Promise<Object> {
         
         try {
             
             let pipeline;
 
-            // if(search_country)
-            // {
-               
-            // }
-            // else
-            // {
-            //     pipeline = [
-            //         { $unwind: "$countries" },
-            //         { $group: { _id: "$countries", total: { $sum: 1 } }},
-            //         { $project: { _id: 0 , countries: "$_id", total: 1 } },
-            //         { $sort: { total: -1 } } 
-            //     ]
-            // }
-
-            let page = 2;
-            let limit = 4;
-
-            pipeline = [
-                {
-                    $match: { 
-                        $and: [
-                            {
-                                $or: [
-                                    { "location_continent": "north america"},
-                                    { "location_continent": "south america"}
-                                ]
+            if(args.search != undefined)
+            {
+                pipeline = [
+                    {
+                        $match: { 
+                            $and: [
+                                {
+                                    $or: [
+                                        { "location_continent": "north america"},
+                                        { "location_continent": "south america"},
+                                    ]
+                                }
+                            ],
+                            countries: {
+                                $in: [args.search]
                             }
-                        ]
-                    }, 
-                },
-                { 
-                    $unwind: "$countries" 
-                },
-                { 
-                    $group: { 
-                        _id: { 
-                            countries: "$countries", 
-                            location_continent: "$location_continent" 
                         }, 
-                        total: { $sum: 1 } 
+                    },
+                    {
+                        $project: { _id: 0, full_name: 1, linkedin_url: 1, emails: 1, countries: 1, location_continent: 1,  }
+                    },
+                    { 
+                        $sort: { total: -1 } 
                     }
-                },
-                {
-                    $project: { _id: 0, countries: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
-                },
-                { 
-                    $sort: { total: -1 } 
-                }
-            ]
+                ];
+            }
+            else
+            {
+                pipeline = [
+                    {
+                        $match: { 
+                            $and: [
+                                {
+                                    $or: [
+                                        { "location_continent": "north america"},
+                                        { "location_continent": "south america"}
+                                    ]
+                                }
+                            ]
+                        }, 
+                    },
+                    { 
+                        $unwind: "$countries" 
+                    },
+                    { 
+                        $group: { 
+                            _id: { 
+                                countries: "$countries", 
+                                location_continent: "$location_continent" 
+                            }, 
+                            total: { $sum: 1 } 
+                        }
+                    },
+                    {
+                        $project: { _id: 0, country: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
+                    },
+                    { 
+                        $sort: { total: -1 } 
+                    }
+                ];
+            }
+
+
 
             const aggregate = this.people.aggregate(pipeline);
 
-            const options = {
-                page: 4,
-                limit: 2,
-            };
+            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, args.options);
 
-            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, options);
-
-            console.log(aggregatePaginate);
-
+            // console.log(aggregatePaginate);
             return aggregatePaginate;
-            
 
         } catch (error) {
             console.log(error)
@@ -211,7 +219,6 @@ class PeopleService {
         }
     }
     
-
 }
 
 

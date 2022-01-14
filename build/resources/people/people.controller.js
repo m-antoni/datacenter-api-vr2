@@ -98,19 +98,26 @@ var PeopleController = /** @class */ (function () {
             });
         }); };
         this.searchUserByCountry = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-            var search_country, data, error_3;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, search, page, limit, params, data, error_3;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        search_country = req.query.search_country;
-                        return [4 /*yield*/, this.PeopleService.searchUserByCountryService(search_country)];
+                        _b.trys.push([0, 2, , 3]);
+                        _a = req.query, search = _a.search, page = _a.page, limit = _a.limit;
+                        params = {
+                            search: search,
+                            options: {
+                                page: page,
+                                limit: limit
+                            }
+                        };
+                        return [4 /*yield*/, this.PeopleService.searchUserByCountryService(params)];
                     case 1:
-                        data = _a.sent();
+                        data = _b.sent();
                         res.status(200).json({ data: data });
                         return [3 /*break*/, 3];
                     case 2:
-                        error_3 = _a.sent();
+                        error_3 = _b.sent();
                         console.log(error_3);
                         next(new http_exception_1.default(400, 'Cannot make a country search.'));
                         return [3 /*break*/, 3];
@@ -124,7 +131,7 @@ var PeopleController = /** @class */ (function () {
         // inject validation if needed
         this.router.get(this.path + "/continent", this.getLocationContinent);
         this.router.get(this.path + "/search", this.searchByUser);
-        this.router.get(this.path + "/country", this.searchUserByCountry);
+        this.router.get(this.path + "/countries", this.searchUserByCountry);
     };
     return PeopleController;
 }());

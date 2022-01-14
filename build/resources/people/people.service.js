@@ -174,57 +174,78 @@ var PeopleService = /** @class */ (function () {
         });
     };
     /** Search User by Countries  */
-    PeopleService.prototype.searchUserByCountryService = function (search_country) {
+    PeopleService.prototype.searchUserByCountryService = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var pipeline, page, limit, aggregate, options, aggregatePaginate, error_3;
+            var pipeline, aggregate, aggregatePaginate, error_3;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         pipeline = void 0;
-                        page = 2;
-                        limit = 4;
-                        pipeline = [
-                            {
-                                $match: {
-                                    $and: [
-                                        {
-                                            $or: [
-                                                { "location_continent": "north america" },
-                                                { "location_continent": "south america" }
-                                            ]
+                        if (args.search != undefined) {
+                            pipeline = [
+                                {
+                                    $match: {
+                                        $and: [
+                                            {
+                                                $or: [
+                                                    { "location_continent": "north america" },
+                                                    { "location_continent": "south america" },
+                                                ]
+                                            }
+                                        ],
+                                        countries: {
+                                            $in: [args.search]
                                         }
-                                    ]
-                                },
-                            },
-                            {
-                                $unwind: "$countries"
-                            },
-                            {
-                                $group: {
-                                    _id: {
-                                        countries: "$countries",
-                                        location_continent: "$location_continent"
                                     },
-                                    total: { $sum: 1 }
+                                },
+                                {
+                                    $project: { _id: 0, full_name: 1, linkedin_url: 1, emails: 1, countries: 1, location_continent: 1, }
+                                },
+                                {
+                                    $sort: { total: -1 }
                                 }
-                            },
-                            {
-                                $project: { _id: 0, countries: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
-                            },
-                            {
-                                $sort: { total: -1 }
-                            }
-                        ];
+                            ];
+                        }
+                        else {
+                            pipeline = [
+                                {
+                                    $match: {
+                                        $and: [
+                                            {
+                                                $or: [
+                                                    { "location_continent": "north america" },
+                                                    { "location_continent": "south america" }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                },
+                                {
+                                    $unwind: "$countries"
+                                },
+                                {
+                                    $group: {
+                                        _id: {
+                                            countries: "$countries",
+                                            location_continent: "$location_continent"
+                                        },
+                                        total: { $sum: 1 }
+                                    }
+                                },
+                                {
+                                    $project: { _id: 0, country: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
+                                },
+                                {
+                                    $sort: { total: -1 }
+                                }
+                            ];
+                        }
                         aggregate = this.people.aggregate(pipeline);
-                        options = {
-                            page: 4,
-                            limit: 2,
-                        };
-                        return [4 /*yield*/, this.people.aggregatePaginate(aggregate, options)];
+                        return [4 /*yield*/, this.people.aggregatePaginate(aggregate, args.options)];
                     case 1:
                         aggregatePaginate = _a.sent();
-                        console.log(aggregatePaginate);
+                        // console.log(aggregatePaginate);
                         return [2 /*return*/, aggregatePaginate];
                     case 2:
                         error_3 = _a.sent();

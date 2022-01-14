@@ -6,6 +6,7 @@ import validationMiddleware from '@/middleware/validation.middleware';
 import validate from '@/resources/post/post.validation';
 import PeopleService from '@/resources/people/people.service';
 import People from '@/resources/people/people.interface';
+import SearchByCountry from './interfaces/people.searchbycountry.interface';
 
 
 interface SearchUser {
@@ -27,7 +28,7 @@ class PeopleController implements Controller {
         // inject validation if needed
         this.router.get(`${this.path}/continent`, this.getLocationContinent);
         this.router.get(`${this.path}/search`, this.searchByUser);
-        this.router.get(`${this.path}/country`, this.searchUserByCountry);
+        this.router.get(`${this.path}/countries`, this.searchUserByCountry);
     }
 
     private getLocationContinent = async (req: Request, res: Response, next: NextFunction ): Promise<Response | void> => {
@@ -74,9 +75,17 @@ class PeopleController implements Controller {
     private searchUserByCountry = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
-            const { search_country } = req.query as any;
+            const { search, page, limit } = req.query as any;
 
-            const data = await this.PeopleService.searchUserByCountryService(search_country);
+            const params: SearchByCountry = {
+                search: search,
+                options: {
+                    page,
+                    limit
+                }
+            }
+
+            const data = await this.PeopleService.searchUserByCountryService(params);
 
             res.status(200).json({ data });
             
