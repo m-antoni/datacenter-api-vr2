@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = require("mongoose");
+var mongoose_aggregate_paginate_v2_1 = __importDefault(require("mongoose-aggregate-paginate-v2"));
 var PeopleSchema = new mongoose_1.Schema({
     id: {
         type: String,
@@ -52,4 +56,5 @@ var PeopleSchema = new mongoose_1.Schema({
         }
     }
 });
+PeopleSchema.plugin(mongoose_aggregate_paginate_v2_1.default);
 exports.default = mongoose_1.model('People', PeopleSchema);

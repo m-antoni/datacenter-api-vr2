@@ -71,17 +71,51 @@ var PeopleController = /** @class */ (function () {
                 }
             });
         }); };
-        this.searchUser = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-            var _a, first_name, last_name, linkedin, match_requirements;
+        this.searchByUser = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
+            var _a, first_name, last_name, linkedin_url, data, error_2;
             return __generator(this, function (_b) {
-                try {
-                    _a = req.query, first_name = _a.first_name, last_name = _a.last_name, linkedin = _a.linkedin, match_requirements = _a.match_requirements;
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 4, , 5]);
+                        _a = req.query, first_name = _a.first_name, last_name = _a.last_name, linkedin_url = _a.linkedin_url;
+                        if (!linkedin_url) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.PeopleService.searchByUserService(linkedin_url)];
+                    case 1:
+                        data = _b.sent();
+                        res.status(200).json({ data: data });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        res.status(400).json({ status: 400, message: "Please check your parameters" });
+                        _b.label = 3;
+                    case 3: return [3 /*break*/, 5];
+                    case 4:
+                        error_2 = _b.sent();
+                        console.log(error_2);
+                        next(new http_exception_1.default(400, 'Cannot make a search something went wrong.'));
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
-                catch (error) {
-                    console.log(error);
-                    next(new http_exception_1.default(400, 'Cannot make a search something went wrong.'));
+            });
+        }); };
+        this.searchUserByCountry = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
+            var search_country, data, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        search_country = req.query.search_country;
+                        return [4 /*yield*/, this.PeopleService.searchUserByCountryService(search_country)];
+                    case 1:
+                        data = _a.sent();
+                        res.status(200).json({ data: data });
+                        return [3 /*break*/, 3];
+                    case 2:
+                        error_3 = _a.sent();
+                        console.log(error_3);
+                        next(new http_exception_1.default(400, 'Cannot make a country search.'));
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/];
                 }
-                return [2 /*return*/];
             });
         }); };
         this.initialiseRoutes();
@@ -89,7 +123,8 @@ var PeopleController = /** @class */ (function () {
     PeopleController.prototype.initialiseRoutes = function () {
         // inject validation if needed
         this.router.get(this.path + "/continent", this.getLocationContinent);
-        this.router.get(this.path + "/search", this.searchUser);
+        this.router.get(this.path + "/search", this.searchByUser);
+        this.router.get(this.path + "/country", this.searchUserByCountry);
     };
     return PeopleController;
 }());

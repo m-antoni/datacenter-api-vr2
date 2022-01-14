@@ -43,14 +43,8 @@ var people_model_1 = __importDefault(require("@/resources/people/people.model"))
 var PeopleService = /** @class */ (function () {
     function PeopleService() {
         this.people = people_model_1.default;
-        /**
-         * Search User
-         */
     }
-    /**
-     *
-     *  Get API
-     */
+    /** Get Location Continent API*/
     PeopleService.prototype.getLocationContinent = function (exact_continent) {
         return __awaiter(this, void 0, void 0, function () {
             var pipeline, result, error_1;
@@ -62,9 +56,24 @@ var PeopleService = /** @class */ (function () {
                         console.log(exact_continent);
                         if (exact_continent) {
                             pipeline = [
-                                { $match: { location_continent: exact_continent } },
-                                { $group: { _id: null, location_continent: { $sum: 1 } } },
-                                { $project: { _id: 0, location_continent: exact_continent, total: "$location_continent" } }
+                                {
+                                    $match: {
+                                        location_continent: exact_continent
+                                    }
+                                },
+                                {
+                                    $group: {
+                                        _id: null,
+                                        location_continent: { $sum: 1 }
+                                    }
+                                },
+                                {
+                                    $project: {
+                                        _id: 0,
+                                        location_continent: exact_continent,
+                                        total: "$location_continent"
+                                    }
+                                }
                             ];
                         }
                         else {
@@ -88,6 +97,9 @@ var PeopleService = /** @class */ (function () {
                                     }
                                 },
                                 {
+                                    $sort: { total: -1 }
+                                },
+                                {
                                     $project: {
                                         _id: 0,
                                         location_continent: "$_id",
@@ -95,13 +107,27 @@ var PeopleService = /** @class */ (function () {
                                     }
                                 }
                             ];
-                            /**
-                             * Aggregate Pipeline for getting all of the users total group by location_continent
-                             * */
+                            /** Aggregate Pipeline for getting all of the users total group by location_continent **/
                             // pipeline = [
-                            //     { $match: { "location_continent": { $ne: null } } },
-                            //     { $group:{ _id: "$location_continent", total: { $sum: 1 } } },
-                            //     { $project: { _id: 0, location_continent: "$_id", total_counts: "$total" } }
+                            //     { 
+                            //         $match: { 
+                            //             "location_continent": { $ne: null } 
+                            //         } 
+                            //     },
+                            //     { 
+                            //         $group:{ 
+                            //             _id: "$location_continent", total: { $sum: 1 } 
+                            //         } 
+                            //     },
+                            //     { 
+                            //         $sort : { total: -1 } 
+                            //     },
+                            //     { 
+                            //         $project: { 
+                            //             _id: 0, location_continent: "$_id", 
+                            //             total: "$total" 
+                            //         } 
+                            //     }
                             // ];
                         }
                         return [4 /*yield*/, this.people.aggregate(pipeline)];
@@ -111,6 +137,98 @@ var PeopleService = /** @class */ (function () {
                     case 2:
                         error_1 = _a.sent();
                         console.log(error_1);
+                        throw new Error('Unable to get data');
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    /** Search User  */
+    PeopleService.prototype.searchByUserService = function (linkedin_url) {
+        return __awaiter(this, void 0, void 0, function () {
+            var pipeline, result, error_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        pipeline = [
+                            {
+                                $match: {
+                                    linkedin_url: linkedin_url
+                                }
+                            }
+                        ];
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.people.aggregate(pipeline)];
+                    case 2:
+                        result = _a.sent();
+                        return [2 /*return*/, result];
+                    case 3:
+                        error_2 = _a.sent();
+                        console.log(error_2);
+                        throw new Error('Unable to get data');
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    /** Search User by Countries  */
+    PeopleService.prototype.searchUserByCountryService = function (search_country) {
+        return __awaiter(this, void 0, void 0, function () {
+            var pipeline, page, limit, aggregate, options, aggregatePaginate, error_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        pipeline = void 0;
+                        page = 2;
+                        limit = 4;
+                        pipeline = [
+                            {
+                                $match: {
+                                    $and: [
+                                        {
+                                            $or: [
+                                                { "location_continent": "north america" },
+                                                { "location_continent": "south america" }
+                                            ]
+                                        }
+                                    ]
+                                },
+                            },
+                            {
+                                $unwind: "$countries"
+                            },
+                            {
+                                $group: {
+                                    _id: {
+                                        countries: "$countries",
+                                        location_continent: "$location_continent"
+                                    },
+                                    total: { $sum: 1 }
+                                }
+                            },
+                            {
+                                $project: { _id: 0, countries: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
+                            },
+                            {
+                                $sort: { total: -1 }
+                            }
+                        ];
+                        aggregate = this.people.aggregate(pipeline);
+                        options = {
+                            page: 4,
+                            limit: 2,
+                        };
+                        return [4 /*yield*/, this.people.aggregatePaginate(aggregate, options)];
+                    case 1:
+                        aggregatePaginate = _a.sent();
+                        console.log(aggregatePaginate);
+                        return [2 /*return*/, aggregatePaginate];
+                    case 2:
+                        error_3 = _a.sent();
+                        console.log(error_3);
                         throw new Error('Unable to get data');
                     case 3: return [2 /*return*/];
                 }

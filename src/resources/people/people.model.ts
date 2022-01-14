@@ -1,5 +1,6 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, AggregatePaginateModel, PaginateOptions, AggregatePaginateResult, Document } from 'mongoose';
 import People from '@/resources/people/people.interface';
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 const PeopleSchema = new Schema(
     {
@@ -56,5 +57,8 @@ const PeopleSchema = new Schema(
     }
 )
 
+PeopleSchema.plugin(aggregatePaginate);
 
-export default model<People>('People', PeopleSchema);
+interface PeopleModel<T extends Document> extends AggregatePaginateModel<T> {  }
+
+export default model<People>('People', PeopleSchema) as PeopleModel<People>;
