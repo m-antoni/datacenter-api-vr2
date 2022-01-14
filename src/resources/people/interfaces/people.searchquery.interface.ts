@@ -1,4 +1,4 @@
-interface SearchByCountry {
+interface SearchQuery {
     search: string | undefined;
     options: {
         page: number;
@@ -7,4 +7,4 @@ interface SearchByCountry {
 }
 
 
-export default SearchByCountry;
+export default SearchQuery;

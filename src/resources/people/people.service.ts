@@ -1,9 +1,16 @@
 import PeopleModel from '@/resources/people/people.model';
 import People from '@/resources/people/people.interface';
-import SearchByCountry from './interfaces/people.searchbycountry.interface';
+import SeachQuery from './interfaces/people.searchquery.interface';
 
 interface ExactContinent {
     exact: string | undefined
+}
+
+enum Continent {
+    NA = "na",
+    SA = "sa",
+    NORTH_AMERICA = "north america",
+    SOUTH_AMERICA = "south america",
 }
 
 class PeopleService {
@@ -11,35 +18,48 @@ class PeopleService {
     private people = PeopleModel;
 
     /** Get Location Continent API*/
-    public async getLocationContinent(exact_continent: string | undefined) : Promise<Object | undefined>{
+    public async getLocationContinent(args: SeachQuery) : Promise<Object | undefined>{
         try {
             
             let pipeline;
 
-            console.log(exact_continent)
-
-            if(exact_continent)
+            if(args.search != undefined)
             {
-                pipeline = [
-                    { 
-                        $match: { 
-                            location_continent: exact_continent 
+                // search must be valid enum continent
+                if(args.search === Continent.NA || args.search === Continent.SA)
+                {
+                    const match_conditional = (args.search === Continent.NA) ? 
+                        { $match: { location_continent: Continent.NORTH_AMERICA } } : 
+                        { $match: { location_continent: Continent.SOUTH_AMERICA } }
+
+                    pipeline = [
+                        match_conditional,
+                        {
+                            $unwind: "$countries" 
+                        },
+                        { 
+                            $group: { 
+                                _id: { 
+                                    countries: "$countries", 
+                                    location_continent: "$location_continent" 
+                                }, 
+                                total: { $sum: 1 } 
+                            }
+                        },
+                        {
+                            $project: { _id: 0, country: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
+                        },
+                        { 
+                            $sort: { total: -1 } 
                         }
-                    },
-                    {
-                        $group: { 
-                            _id: null, 
-                            location_continent: { $sum: 1 } 
-                        } 
-                    },
-                    { 
-                        $project: { 
-                            _id: 0, 
-                            location_continent: exact_continent, 
-                            total: "$location_continent"
-                        } 
-                    }
-                ];  
+                    ];
+                }
+                else
+                {
+                    const data = { status: 404, message: "Invalid Continent" };
+                    
+                    return data;
+                }
             }
             else
             {
@@ -49,8 +69,8 @@ class PeopleService {
                            $and: [
                                {
                                     $or: [
-                                        { "location_continent": "north america"},
-                                        { "location_continent": "south america"}
+                                        { location_continent: Continent.NORTH_AMERICA},
+                                        { location_continent: Continent.SOUTH_AMERICA}
                                     ]
                                }
                            ]
@@ -100,9 +120,11 @@ class PeopleService {
 
             }
     
-            const result = await this.people.aggregate(pipeline);
+            const aggregate = this.people.aggregate(pipeline);
 
-            return result;
+            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, args.options);
+
+            return aggregatePaginate;
             
         } catch (error) {
             console.log(error)
@@ -136,7 +158,7 @@ class PeopleService {
 
     
     /** Search User by Countries  */
-    public async searchUserByCountryService(args: SearchByCountry): Promise<Object> {
+    public async searchUserByCountryService(args: SeachQuery): Promise<Object> {
         
         try {
             
@@ -150,8 +172,8 @@ class PeopleService {
                             $and: [
                                 {
                                     $or: [
-                                        { "location_continent": "north america"},
-                                        { "location_continent": "south america"},
+                                        { location_continent: Continent.NORTH_AMERICA },
+                                        { location_continent: Continent.SOUTH_AMERICA }
                                     ]
                                 }
                             ],
@@ -176,8 +198,8 @@ class PeopleService {
                             $and: [
                                 {
                                     $or: [
-                                        { "location_continent": "north america"},
-                                        { "location_continent": "south america"}
+                                        { location_continent: Continent.NORTH_AMERICA },
+                                        { location_continent: Continent.SOUTH_AMERICA }
                                     ]
                                 }
                             ]
@@ -201,16 +223,14 @@ class PeopleService {
                     { 
                         $sort: { total: -1 } 
                     }
-                ];
+                ];   
             }
-
 
 
             const aggregate = this.people.aggregate(pipeline);
 
             const aggregatePaginate = await this.people.aggregatePaginate(aggregate, args.options);
 
-            // console.log(aggregatePaginate);
             return aggregatePaginate;
 
         } catch (error) {

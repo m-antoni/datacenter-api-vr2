@@ -6,7 +6,7 @@ import validationMiddleware from '@/middleware/validation.middleware';
 import validate from '@/resources/post/post.validation';
 import PeopleService from '@/resources/people/people.service';
 import People from '@/resources/people/people.interface';
-import SearchByCountry from './interfaces/people.searchbycountry.interface';
+import SearchByCountry from './interfaces/people.searchquery.interface';
 
 
 interface SearchUser {
@@ -34,12 +34,22 @@ class PeopleController implements Controller {
     private getLocationContinent = async (req: Request, res: Response, next: NextFunction ): Promise<Response | void> => {
         try {
             
-            let exact_continent = req.query.exact?.toString();
+            const { search, page, limit } = req.query as any;
 
-            const data = await this.PeopleService.getLocationContinent(exact_continent);
+            const searchParams: SearchByCountry = {
+                search: search,
+                options: {
+                    page,
+                    limit
+                }
+            }
 
-            console.log(data);
+            const data: any = await this.PeopleService.getLocationContinent(searchParams);
             
+            if(data.status){
+                res.status(data.status).json({ data });
+            }
+
             res.status(200).json({ data });
 
         } catch (error) {
@@ -77,7 +87,7 @@ class PeopleController implements Controller {
             
             const { search, page, limit } = req.query as any;
 
-            const params: SearchByCountry = {
+            const searchParams: SearchByCountry = {
                 search: search,
                 options: {
                     page,
@@ -85,7 +95,7 @@ class PeopleController implements Controller {
                 }
             }
 
-            const data = await this.PeopleService.searchUserByCountryService(params);
+            const data = await this.PeopleService.searchUserByCountryService(searchParams);
 
             res.status(200).json({ data });
             
@@ -94,10 +104,7 @@ class PeopleController implements Controller {
             next(new HttpException(400, 'Cannot make a country search.'));            
         }
     }
-
     
-
-
 }
 
 

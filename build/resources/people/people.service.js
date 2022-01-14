@@ -40,41 +40,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var people_model_1 = __importDefault(require("@/resources/people/people.model"));
+var Continent;
+(function (Continent) {
+    Continent["NA"] = "na";
+    Continent["SA"] = "sa";
+    Continent["NORTH_AMERICA"] = "north america";
+    Continent["SOUTH_AMERICA"] = "south america";
+})(Continent || (Continent = {}));
 var PeopleService = /** @class */ (function () {
     function PeopleService() {
         this.people = people_model_1.default;
     }
     /** Get Location Continent API*/
-    PeopleService.prototype.getLocationContinent = function (exact_continent) {
+    PeopleService.prototype.getLocationContinent = function (args) {
         return __awaiter(this, void 0, void 0, function () {
-            var pipeline, result, error_1;
+            var pipeline, match_conditional, data, aggregate, aggregatePaginate, error_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
                         pipeline = void 0;
-                        console.log(exact_continent);
-                        if (exact_continent) {
-                            pipeline = [
-                                {
-                                    $match: {
-                                        location_continent: exact_continent
+                        if (args.search != undefined) {
+                            // search must be valid enum continent
+                            if (args.search === Continent.NA || args.search === Continent.SA) {
+                                match_conditional = (args.search === Continent.NA) ?
+                                    { $match: { location_continent: Continent.NORTH_AMERICA } } :
+                                    { $match: { location_continent: Continent.SOUTH_AMERICA } };
+                                pipeline = [
+                                    match_conditional,
+                                    {
+                                        $unwind: "$countries"
+                                    },
+                                    {
+                                        $group: {
+                                            _id: {
+                                                countries: "$countries",
+                                                location_continent: "$location_continent"
+                                            },
+                                            total: { $sum: 1 }
+                                        }
+                                    },
+                                    {
+                                        $project: { _id: 0, country: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
+                                    },
+                                    {
+                                        $sort: { total: -1 }
                                     }
-                                },
-                                {
-                                    $group: {
-                                        _id: null,
-                                        location_continent: { $sum: 1 }
-                                    }
-                                },
-                                {
-                                    $project: {
-                                        _id: 0,
-                                        location_continent: exact_continent,
-                                        total: "$location_continent"
-                                    }
-                                }
-                            ];
+                                ];
+                            }
+                            else {
+                                data = { status: 404, message: "Invalid Continent" };
+                                return [2 /*return*/, data];
+                            }
                         }
                         else {
                             pipeline = [
@@ -83,8 +100,8 @@ var PeopleService = /** @class */ (function () {
                                         $and: [
                                             {
                                                 $or: [
-                                                    { "location_continent": "north america" },
-                                                    { "location_continent": "south america" }
+                                                    { location_continent: Continent.NORTH_AMERICA },
+                                                    { location_continent: Continent.SOUTH_AMERICA }
                                                 ]
                                             }
                                         ]
@@ -130,10 +147,11 @@ var PeopleService = /** @class */ (function () {
                             //     }
                             // ];
                         }
-                        return [4 /*yield*/, this.people.aggregate(pipeline)];
+                        aggregate = this.people.aggregate(pipeline);
+                        return [4 /*yield*/, this.people.aggregatePaginate(aggregate, args.options)];
                     case 1:
-                        result = _a.sent();
-                        return [2 /*return*/, result];
+                        aggregatePaginate = _a.sent();
+                        return [2 /*return*/, aggregatePaginate];
                     case 2:
                         error_1 = _a.sent();
                         console.log(error_1);
@@ -189,8 +207,8 @@ var PeopleService = /** @class */ (function () {
                                         $and: [
                                             {
                                                 $or: [
-                                                    { "location_continent": "north america" },
-                                                    { "location_continent": "south america" },
+                                                    { location_continent: Continent.NORTH_AMERICA },
+                                                    { location_continent: Continent.SOUTH_AMERICA }
                                                 ]
                                             }
                                         ],
@@ -214,8 +232,8 @@ var PeopleService = /** @class */ (function () {
                                         $and: [
                                             {
                                                 $or: [
-                                                    { "location_continent": "north america" },
-                                                    { "location_continent": "south america" }
+                                                    { location_continent: Continent.NORTH_AMERICA },
+                                                    { location_continent: Continent.SOUTH_AMERICA }
                                                 ]
                                             }
                                         ]
@@ -245,7 +263,6 @@ var PeopleService = /** @class */ (function () {
                         return [4 /*yield*/, this.people.aggregatePaginate(aggregate, args.options)];
                     case 1:
                         aggregatePaginate = _a.sent();
-                        // console.log(aggregatePaginate);
                         return [2 /*return*/, aggregatePaginate];
                     case 2:
                         error_3 = _a.sent();

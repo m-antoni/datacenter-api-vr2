@@ -49,17 +49,25 @@ var PeopleController = /** @class */ (function () {
         this.router = express_1.Router();
         this.PeopleService = new people_service_1.default();
         this.getLocationContinent = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-            var exact_continent, data, error_1;
-            var _a;
+            var _a, search, page, limit, searchParams, data, error_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 2, , 3]);
-                        exact_continent = (_a = req.query.exact) === null || _a === void 0 ? void 0 : _a.toString();
-                        return [4 /*yield*/, this.PeopleService.getLocationContinent(exact_continent)];
+                        _a = req.query, search = _a.search, page = _a.page, limit = _a.limit;
+                        searchParams = {
+                            search: search,
+                            options: {
+                                page: page,
+                                limit: limit
+                            }
+                        };
+                        return [4 /*yield*/, this.PeopleService.getLocationContinent(searchParams)];
                     case 1:
                         data = _b.sent();
-                        console.log(data);
+                        if (data.status) {
+                            res.status(data.status).json({ data: data });
+                        }
                         res.status(200).json({ data: data });
                         return [3 /*break*/, 3];
                     case 2:
@@ -98,20 +106,20 @@ var PeopleController = /** @class */ (function () {
             });
         }); };
         this.searchUserByCountry = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-            var _a, search, page, limit, params, data, error_3;
+            var _a, search, page, limit, searchParams, data, error_3;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 2, , 3]);
                         _a = req.query, search = _a.search, page = _a.page, limit = _a.limit;
-                        params = {
+                        searchParams = {
                             search: search,
                             options: {
                                 page: page,
                                 limit: limit
                             }
                         };
-                        return [4 /*yield*/, this.PeopleService.searchUserByCountryService(params)];
+                        return [4 /*yield*/, this.PeopleService.searchUserByCountryService(searchParams)];
                     case 1:
                         data = _b.sent();
                         res.status(200).json({ data: data });
