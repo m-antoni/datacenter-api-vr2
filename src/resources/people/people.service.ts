@@ -1,7 +1,8 @@
 import PeopleModel from '@/resources/people/people.model';
 import People from '@/resources/people/people.interface';
 import SeachQuery from './interfaces/people.searchquery.interface';
-import { number } from 'joi';
+import { link, number } from 'joi';
+import SearchQuery from './interfaces/people.searchquery.interface';
 
 interface ExactContinent {
     exact: string | undefined
@@ -31,7 +32,7 @@ class PeopleService {
             const { search_continent, search_country, sortby, options } = args; 
             let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
             let pipeline;
-        
+            
             if(search_continent != undefined)
             {
                 // search must be valid enum continent
@@ -130,7 +131,7 @@ class PeopleService {
     
             const aggregate = this.people.aggregate(pipeline);
 
-            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, args.options);
+            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, options);
 
             return aggregatePaginate;
             
@@ -142,28 +143,105 @@ class PeopleService {
 
 
     /** Search User  */
-    public async searchByUserService(linkedin_url: string) : Promise<Object> {
+    public async searchByUserService(args: SearchQuery) : Promise<Object> {
     
-        let pipeline = [
-            {
-                $match: { 
-                    linkedin_url: linkedin_url          
-                 } 
-            }
-        ];
+        let { linkedin_url, search_text, sortby, options } = args; 
+
+        let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
+
+        let pipeline;
+
 
         try {
-            
-            const result = await this.people.aggregate(pipeline);
 
-            return result;
+            if(linkedin_url)
+            {
+                pipeline = [
+                    {
+                        $match: { 
+                            $and: [{
+                                $or: [
+                                    { location_continent: Continent.NORTH_AMERICA },
+                                    { location_continent: Continent.SOUTH_AMERICA }
+                                ]
+                            }],
+                            linkedin_url: linkedin_url
+                        }, 
+                    },
+                    { $sort: { full_name: sortVal }},
+                ];
+            }
+            else if(search_text)
+            {
+                pipeline = [
+                    { $match: {
+                        $and: [{
+                            $or: [
+                                { location_continent: Continent.NORTH_AMERICA },
+                                { location_continent: Continent.SOUTH_AMERICA }
+                            ]
+                        }],
+                        $text: { $search: search_text } } 
+                    },
+                    { $sort : { full_name: sortVal } },
+                    { $project: { _id: 0, full_name: 1, location_continent: 1, linkedin_url: 1 } }
+                ];
+            }
+            else
+            {
+                pipeline = [
+                    { 
+                        $match: { 
+                           $and: [
+                               {
+                                    $or: [
+                                        { location_continent: Continent.NORTH_AMERICA},
+                                        { location_continent: Continent.SOUTH_AMERICA}
+                                    ]
+                               }
+                           ]
+                        } 
+                    },
+                    { $sort: { full_name: sortVal } },
+                    { $project: { _id: 0, full_name: 1, linkedin_url: 1, location_continent: 1, location_country: 1 } }
+                ];
+            }
+         
+            const aggregate = this.people.aggregate(pipeline);
+
+            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, options)
+
+            return aggregatePaginate;
 
         } catch (error) {
             console.log(error)
             throw new Error('Unable to get data');
         }
-    }
 
+        // try {
+
+        //     // { $text: { $search: search_text } }
+            
+        //     pipeline = [ 
+        //             { 
+        //                 $match: { linkedin_url: linkedin_url }  
+        //             }
+        //             // { $sort : { _id: sortVal } },
+        //     ];
+            
+        //     const aggregate = await this.people.aggregate(pipeline);
+
+        //     // const aggregatePaginate = await this.people.aggregatePaginate(aggregate, options);
+        
+        //     return aggregate;
+
+        
+
+        // } catch (error) {
+        //     console.log(error)
+        //     throw new Error('Unable to get data');
+        // }
+    }
 
     
 }

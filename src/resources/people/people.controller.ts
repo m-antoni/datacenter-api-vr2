@@ -16,7 +16,7 @@ interface SearchUser {
 }
 
 class PeopleController implements Controller {
-    public path = '/peoples';
+    public path = '/datacenter';
     public router = Router();
     private PeopleService = new PeopleService();
 
@@ -27,7 +27,7 @@ class PeopleController implements Controller {
     private initialiseRoutes(): void {
         // inject validation if needed
         this.router.get(`${this.path}/location`, this.searchByLocation);
-        this.router.get(`${this.path}/search`, this.searchByUser);
+        this.router.get(`${this.path}/user`, this.searchByUser);
     }
 
     private searchByLocation = async (req: Request, res: Response, next: NextFunction ): Promise<Response | void> => {
@@ -35,6 +35,8 @@ class PeopleController implements Controller {
             
             const { search_continent, search_country, page, limit, sortby = 'desc' } = req.query as any;
 
+            if(search_continent && search_country) { next(new HttpException(400, 'Invalid parameters given')); }
+ 
             const searchParams: SearchByCountry = {
                 search_continent,
                 search_country,
@@ -63,18 +65,34 @@ class PeopleController implements Controller {
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
-            const { first_name, last_name, linkedin_url } = req.query as any; // first_name and last_name is being pass but not priotity here
+            const { first_name, last_name, linkedin_url, search_text, page, limit, sortby = 'desc' } = req.query as any;
 
-            if(linkedin_url)
-            {
-                const data = await this.PeopleService.searchByUserService(linkedin_url);
+            const searchParams: SearchByCountry = {
+                linkedin_url,
+                search_text,
+                sortby,
+                options: {
+                    page,
+                    limit,
+                }
+            }
 
-                res.status(200).json({ data });
-            }
-            else
-            {
-                res.status(400).json({ status: 400, message: "Please check your parameters" });
-            }
+            if(linkedin_url && search_text) { next(new HttpException(400, 'Invalid parameters given')); }
+
+            const data = await this.PeopleService.searchByUserService(searchParams);
+            
+            res.status(200).json({ data });
+
+
+            // if(linkedin_url || search_text)
+            // {
+            //     const data = await this.PeopleService.searchByUserService(searchParams);
+            //     res.status(200).json({ data });
+            // }
+            // else
+            // {
+            //     res.status(400).json({ status: 400, message: "Please check your parameters" });
+            // }
          
         } catch (error) {
             console.log(error)
