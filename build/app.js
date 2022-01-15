@@ -38,9 +38,11 @@ var App = /** @class */ (function () {
     };
     App.prototype.initialiseDatabaseConnection = function () {
         var _a = process.env, MONGO_USER = _a.MONGO_USER, MONGO_PASSWORD = _a.MONGO_PASSWORD, MONGO_PATH = _a.MONGO_PATH;
-        // mongoose.connect(`mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}${MONGO_PATH}`);
-        mongoose_1.default.connect("mongodb://localhost:27017/datacenterdb");
-        console.log('MongoDB Connected');
+        /** CLOUD DATABASE CONNECTION */
+        mongoose_1.default.connect("mongodb+srv://" + MONGO_USER + ":" + MONGO_PASSWORD + MONGO_PATH);
+        /** LOCAL DATABASE CONNECTION */
+        // mongoose.connect(`mongodb://localhost:27017/datacenterdb`);
+        console.log('MongoDB Connected Successfully...');
     };
     App.prototype.listen = function () {
         var _this = this;

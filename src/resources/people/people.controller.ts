@@ -26,25 +26,26 @@ class PeopleController implements Controller {
 
     private initialiseRoutes(): void {
         // inject validation if needed
-        this.router.get(`${this.path}/continent`, this.getLocationContinent);
+        this.router.get(`${this.path}/location`, this.searchByLocation);
         this.router.get(`${this.path}/search`, this.searchByUser);
-        this.router.get(`${this.path}/countries`, this.searchUserByCountry);
     }
 
-    private getLocationContinent = async (req: Request, res: Response, next: NextFunction ): Promise<Response | void> => {
+    private searchByLocation = async (req: Request, res: Response, next: NextFunction ): Promise<Response | void> => {
         try {
             
-            const { search, page, limit } = req.query as any;
+            const { search_continent, search_country, page, limit, sortby = 'desc' } = req.query as any;
 
             const searchParams: SearchByCountry = {
-                search: search,
+                search_continent,
+                search_country,
+                sortby,
                 options: {
                     page,
-                    limit
+                    limit,
                 }
             }
 
-            const data: any = await this.PeopleService.getLocationContinent(searchParams);
+            const data: any = await this.PeopleService.searchByLocationService(searchParams);
             
             if(data.status){
                 res.status(data.status).json({ data });
@@ -56,7 +57,8 @@ class PeopleController implements Controller {
             console.log(error)
             next(new HttpException(400, 'Cannot get location continent'));
         }
-    }
+    }   
+
 
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
@@ -73,35 +75,10 @@ class PeopleController implements Controller {
             {
                 res.status(400).json({ status: 400, message: "Please check your parameters" });
             }
-
          
         } catch (error) {
             console.log(error)
             next(new HttpException(400, 'Cannot make a search something went wrong.'));            
-        }
-    }
-
-    
-    private searchUserByCountry = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
-        try {
-            
-            const { search, page, limit } = req.query as any;
-
-            const searchParams: SearchByCountry = {
-                search: search,
-                options: {
-                    page,
-                    limit
-                }
-            }
-
-            const data = await this.PeopleService.searchUserByCountryService(searchParams);
-
-            res.status(200).json({ data });
-            
-        } catch (error) {
-            console.log(error)
-            next(new HttpException(400, 'Cannot make a country search.'));            
         }
     }
     

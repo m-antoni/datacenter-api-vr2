@@ -1,6 +1,7 @@
 import PeopleModel from '@/resources/people/people.model';
 import People from '@/resources/people/people.interface';
 import SeachQuery from './interfaces/people.searchquery.interface';
+import { number } from 'joi';
 
 interface ExactContinent {
     exact: string | undefined
@@ -13,45 +14,46 @@ enum Continent {
     SOUTH_AMERICA = "south america",
 }
 
+enum SortBy {
+    asc = 1,
+    desc = -1
+}
+
 class PeopleService {
     
     private people = PeopleModel;
 
-    /** Get Location Continent API*/
-    public async getLocationContinent(args: SeachQuery) : Promise<Object | undefined>{
+    /** Search By Location */
+    public async searchByLocationService(args: SeachQuery) : Promise<Object | undefined>{
+        
         try {
             
+            const { search_continent, search_country, sortby, options } = args; 
+            let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
             let pipeline;
-
-            if(args.search != undefined)
+        
+            if(search_continent != undefined)
             {
                 // search must be valid enum continent
-                if(args.search === Continent.NA || args.search === Continent.SA)
+                if(search_continent === Continent.NA || search_continent === Continent.SA)
                 {
-                    const match_conditional = (args.search === Continent.NA) ? 
+                    const match_conditional = (search_continent === Continent.NA) ? 
                         { $match: { location_continent: Continent.NORTH_AMERICA } } : 
                         { $match: { location_continent: Continent.SOUTH_AMERICA } }
-
+                    
                     pipeline = [
                         match_conditional,
-                        {
-                            $unwind: "$countries" 
-                        },
                         { 
                             $group: { 
                                 _id: { 
-                                    countries: "$countries", 
-                                    location_continent: "$location_continent" 
+                                    countries: "$location_country", 
+                                    continent: "$location_continent" 
                                 }, 
-                                total: { $sum: 1 } 
+                                total: { $sum: 1 }
                             }
                         },
-                        {
-                            $project: { _id: 0, country: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
-                        },
-                        { 
-                            $sort: { total: -1 } 
-                        }
+                        { $sort: { total: sortVal } },
+                        { $project: { _id: 0, location_country: "$_id.countries", location_continent: "$_id.continent", total: 1 } },
                     ];
                 }
                 else
@@ -61,8 +63,27 @@ class PeopleService {
                     return data;
                 }
             }
+            else if(search_country != undefined)
+            {
+                pipeline = [
+                    {
+                        $match: { 
+                            $and: [{
+                                $or: [
+                                    { location_continent: Continent.NORTH_AMERICA },
+                                    { location_continent: Continent.SOUTH_AMERICA }
+                                ]
+                            }],
+                            location_country: args.search_country
+                        }, 
+                    },
+                    { $sort: { full_name: sortVal }},
+                    { $project: { _id: 0, full_name: 1, linkedin_url: 1, location_country: 1, location_continent: 1, }}
+                ];
+            }
             else
             {
+                // Show Summary total user of North and South America
                 pipeline = [
                     { 
                         $match: { 
@@ -76,22 +97,9 @@ class PeopleService {
                            ]
                         } 
                     },
-                    { 
-                        $group: {
-                            _id: "$location_continent", 
-                            total: { $sum: 1 } 
-                        } 
-                    },
-                    { 
-                        $sort : { total: -1 } 
-                    },
-                    { 
-                        $project: { 
-                            _id: 0, 
-                            location_continent: "$_id", 
-                            total_counts: "$total" 
-                        } 
-                    }
+                    { $group: { _id: "$location_continent", total: { $sum: 1 } } },
+                    { $sort : { total: sortVal } },
+                    { $project: { _id: 0, location_continent: "$_id", total: "$total" } }
                 ];
 
                 /** Aggregate Pipeline for getting all of the users total group by location_continent **/
@@ -156,88 +164,7 @@ class PeopleService {
         }
     }
 
-    
-    /** Search User by Countries  */
-    public async searchUserByCountryService(args: SeachQuery): Promise<Object> {
-        
-        try {
-            
-            let pipeline;
 
-            if(args.search != undefined)
-            {
-                pipeline = [
-                    {
-                        $match: { 
-                            $and: [
-                                {
-                                    $or: [
-                                        { location_continent: Continent.NORTH_AMERICA },
-                                        { location_continent: Continent.SOUTH_AMERICA }
-                                    ]
-                                }
-                            ],
-                            countries: {
-                                $in: [args.search]
-                            }
-                        }, 
-                    },
-                    {
-                        $project: { _id: 0, full_name: 1, linkedin_url: 1, emails: 1, countries: 1, location_continent: 1,  }
-                    },
-                    { 
-                        $sort: { total: -1 } 
-                    }
-                ];
-            }
-            else
-            {
-                pipeline = [
-                    {
-                        $match: { 
-                            $and: [
-                                {
-                                    $or: [
-                                        { location_continent: Continent.NORTH_AMERICA },
-                                        { location_continent: Continent.SOUTH_AMERICA }
-                                    ]
-                                }
-                            ]
-                        }, 
-                    },
-                    { 
-                        $unwind: "$countries" 
-                    },
-                    { 
-                        $group: { 
-                            _id: { 
-                                countries: "$countries", 
-                                location_continent: "$location_continent" 
-                            }, 
-                            total: { $sum: 1 } 
-                        }
-                    },
-                    {
-                        $project: { _id: 0, country: "$_id.countries", location_continent: "$_id.location_continent", total: 1 }
-                    },
-                    { 
-                        $sort: { total: -1 } 
-                    }
-                ];   
-            }
-
-
-            const aggregate = this.people.aggregate(pipeline);
-
-            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, args.options);
-
-            return aggregatePaginate;
-
-        } catch (error) {
-            console.log(error)
-            throw new Error('Unable to get data');
-        }
-    }
     
 }
 

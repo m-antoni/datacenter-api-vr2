@@ -48,30 +48,32 @@ var PeopleController = /** @class */ (function () {
         this.path = '/peoples';
         this.router = express_1.Router();
         this.PeopleService = new people_service_1.default();
-        this.getLocationContinent = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-            var _a, search, page, limit, searchParams, data, error_1;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+        this.searchByLocation = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
+            var _a, search_continent, search_country, page, limit, _b, sortby, searchParams, data, error_1;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
                     case 0:
-                        _b.trys.push([0, 2, , 3]);
-                        _a = req.query, search = _a.search, page = _a.page, limit = _a.limit;
+                        _c.trys.push([0, 2, , 3]);
+                        _a = req.query, search_continent = _a.search_continent, search_country = _a.search_country, page = _a.page, limit = _a.limit, _b = _a.sortby, sortby = _b === void 0 ? 'desc' : _b;
                         searchParams = {
-                            search: search,
+                            search_continent: search_continent,
+                            search_country: search_country,
+                            sortby: sortby,
                             options: {
                                 page: page,
-                                limit: limit
+                                limit: limit,
                             }
                         };
-                        return [4 /*yield*/, this.PeopleService.getLocationContinent(searchParams)];
+                        return [4 /*yield*/, this.PeopleService.searchByLocationService(searchParams)];
                     case 1:
-                        data = _b.sent();
+                        data = _c.sent();
                         if (data.status) {
                             res.status(data.status).json({ data: data });
                         }
                         res.status(200).json({ data: data });
                         return [3 /*break*/, 3];
                     case 2:
-                        error_1 = _b.sent();
+                        error_1 = _c.sent();
                         console.log(error_1);
                         next(new http_exception_1.default(400, 'Cannot get location continent'));
                         return [3 /*break*/, 3];
@@ -105,41 +107,12 @@ var PeopleController = /** @class */ (function () {
                 }
             });
         }); };
-        this.searchUserByCountry = function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-            var _a, search, page, limit, searchParams, data, error_3;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _b.trys.push([0, 2, , 3]);
-                        _a = req.query, search = _a.search, page = _a.page, limit = _a.limit;
-                        searchParams = {
-                            search: search,
-                            options: {
-                                page: page,
-                                limit: limit
-                            }
-                        };
-                        return [4 /*yield*/, this.PeopleService.searchUserByCountryService(searchParams)];
-                    case 1:
-                        data = _b.sent();
-                        res.status(200).json({ data: data });
-                        return [3 /*break*/, 3];
-                    case 2:
-                        error_3 = _b.sent();
-                        console.log(error_3);
-                        next(new http_exception_1.default(400, 'Cannot make a country search.'));
-                        return [3 /*break*/, 3];
-                    case 3: return [2 /*return*/];
-                }
-            });
-        }); };
         this.initialiseRoutes();
     }
     PeopleController.prototype.initialiseRoutes = function () {
         // inject validation if needed
-        this.router.get(this.path + "/continent", this.getLocationContinent);
+        this.router.get(this.path + "/location", this.searchByLocation);
         this.router.get(this.path + "/search", this.searchByUser);
-        this.router.get(this.path + "/countries", this.searchUserByCountry);
     };
     return PeopleController;
 }());
