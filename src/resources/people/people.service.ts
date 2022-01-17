@@ -103,30 +103,6 @@ class PeopleService {
                     { $project: { _id: 0, location_continent: "$_id", total: "$total" } }
                 ];
 
-                /** Aggregate Pipeline for getting all of the users total group by location_continent **/
-
-                // pipeline = [
-                //     { 
-                //         $match: { 
-                //             "location_continent": { $ne: null } 
-                //         } 
-                //     },
-                //     { 
-                //         $group:{ 
-                //             _id: "$location_continent", total: { $sum: 1 } 
-                //         } 
-                //     },
-                //     { 
-                //         $sort : { total: -1 } 
-                //     },
-                //     { 
-                //         $project: { 
-                //             _id: 0, location_continent: "$_id", 
-                //             total: "$total" 
-                //         } 
-                //     }
-                // ];
-
             }
     
             const aggregate = this.people.aggregate(pipeline);
@@ -242,6 +218,38 @@ class PeopleService {
         //     throw new Error('Unable to get data');
         // }
     }
+
+
+    public async insertAndUpdateUserService(args: People): Promise <Object | void> {
+        try {
+            
+            const identifier = { linkedin_url: args.linkedin_url };
+    
+
+            const updateValues = { 
+                full_name: args.full_name,
+                last_name: args.last_name,
+                linkedin_url: args.linkedin_url,
+                $addToSet:{
+                    emails: {
+                        $each: args.emails
+                    },
+                    phone_numbers: {
+                        $each: args.phone_numbers
+                    }
+                },
+            }
+            
+            const insertOrUpdate = await PeopleModel.findOneAndUpdate( identifier, updateValues, { upsert: true, new: true } );
+
+            return insertOrUpdate;
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
 
     
 }

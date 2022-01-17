@@ -6,15 +6,12 @@ const PeopleSchema = new Schema(
     {
         id: {
             type: String,
-            required: true
         },
         full_name: {
-            type: String,
-            required: true
+            type: String
         },
         first_name: {
-            type: String,
-            required: true,
+            type: String
         },
         middle_initial: {
             type: String
@@ -41,19 +38,32 @@ const PeopleSchema = new Schema(
         location_continent: {
             type: String
         },
-        version_status: {
-            status: {
-                type: String
-            },
-            contains: [],
-            previous_version: {
-                type: String
-            },
-            current_version: {
-                type: String
+        emails: [
+            {
+                type: {
+                    type: String
+                },
+                address: {
+                    type: String
+                }
             }
-        }
-        
+        ],
+        phone_numbers: {
+            type: Array,
+            required: false
+        },
+        interest: {
+            type: Array,
+            required: false
+        },
+        skills: {
+            type: Array,
+            required: false
+        },
+        version_status: {}
+    },
+    {
+        versionKey: false
     }
 )
 

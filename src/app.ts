@@ -45,10 +45,10 @@ class App {
         const { MONGO_USER, MONGO_PASSWORD, MONGO_PATH } = process.env;
         
         /** CLOUD DATABASE CONNECTION */
-        mongoose.connect(`mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}${MONGO_PATH}`);
+        // mongoose.connect(`mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}${MONGO_PATH}`);
 
         /** LOCAL DATABASE CONNECTION */
-        // mongoose.connect(`mongodb://localhost:27017/datacenterdb`);
+        mongoose.connect(`mongodb://localhost:27017/datacenterdb`);
 
         console.log('MongoDB Connected Successfully...');
     }

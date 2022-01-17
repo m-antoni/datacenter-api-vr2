@@ -28,6 +28,7 @@ class PeopleController implements Controller {
         // inject validation if needed
         this.router.get(`${this.path}/location`, this.searchByLocation);
         this.router.get(`${this.path}/user`, this.searchByUser);
+        this.router.post(`${this.path}/user`, this.insertAndUpdateUser);
     }
 
     private searchByLocation = async (req: Request, res: Response, next: NextFunction ): Promise<Response | void> => {
@@ -99,7 +100,25 @@ class PeopleController implements Controller {
             next(new HttpException(400, 'Cannot make a search something went wrong.'));            
         }
     }
-    
+
+
+    /** Insert User Data */
+    private insertAndUpdateUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+        try {
+            
+            let args = req.body;
+
+            const data = await this.PeopleService.insertAndUpdateUserService(args);
+
+            res.status(200).json({ data });
+
+        } catch (error) {
+             console.log(error)
+            next(new HttpException(400, 'Cannot insert something went wrong'));  
+        }
+    }
+
+
 }
 
 
