@@ -24,5 +24,4 @@ export default interface Post extends Document {
     location_continent?: string;
     interest?: string[];
     version_status?: {};
-
 }

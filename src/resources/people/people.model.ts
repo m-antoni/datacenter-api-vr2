@@ -38,16 +38,7 @@ const PeopleSchema = new Schema(
         location_continent: {
             type: String
         },
-        emails: [
-            {
-                type: {
-                    type: String
-                },
-                address: {
-                    type: String
-                }
-            }
-        ],
+        emails: [],
         phone_numbers: {
             type: Array,
             required: false
