@@ -4,57 +4,51 @@ import aggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 const PeopleSchema = new Schema(
     {
-        id: {
-            type: String,
-        },
-        full_name: {
-            type: String
-        },
-        first_name: {
-            type: String
-        },
-        middle_initial: {
-            type: String
-        },
-        middle_name: {
-            type: String
-        },
-        last_name: {
-            type: String,
-        },
+        id: String,
+        full_name: String,
+        first_name: String,
+        middle_initial: String,
+        middle_name: String,
+        last_name: String,
         linkedin_url: {
             type: String,
             required: true
         },
-        linkedin_username: {
-            type: String            
-        },
-        location_name: {
-            type: String
-        },
-        location_country: {
-            type: String
-        },
-        location_continent: {
-            type: String
-        },
+        linkedin_username: String,
+        linkedin_id: String,
+        industry: String,
+        job_title: String,
+        job_company_id: String,
+        job_company_name: String,
+        job_company_size: String,
+        job_company_linkedin_url: String,
+        job_company_linkedin_id: String,
+        job_company_location_name: String,
+        job_company_location_region: String,
+        job_company_location_geo: String,
+        job_company_location_postal_code: String,
+        job_company_location_country: String,
+        job_company_location_continent: String,
+        job_start_date: String,
+        job_summary: String,
+        linkedin_connections: Number,
+        summary: String,
+        location_name: String,
+        location_country: String,
+        location_continent: String,
+        image: String,
         emails: [],
-        phone_numbers: {
-            type: Array,
-            required: false
-        },
-        interest: {
-            type: Array,
-            required: false
-        },
-        skills: {
-            type: Array,
-            required: false
-        },
+        phone_numbers: [],
+        telephone_numbers: [],
+        experience: [],
+        education: [],
+        profiles: [],
+        interest: [],
+        skills: [],
         version_status: {}
     },
     {
-        versionKey: false
+        versionKey: false // get rid of _v:0 field
     }
 )
 

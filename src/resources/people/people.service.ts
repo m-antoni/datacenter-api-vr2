@@ -98,29 +98,61 @@ class PeopleService {
         try {
             
             const identifier = { linkedin_url: args.linkedin_url };
-    
-
-            const updateValues = { 
-                full_name: args.full_name,
-                first_name: args.first_name,
-                last_name: args.last_name,
-                linkedin_url: args.linkedin_url,
-                location_continent: args.location_continent,
-                location_country: args.location_country,
-                $addToSet:{
-                    emails: {
-                        $each: args.emails
-                    },
-                    phone_numbers: {
-                        $each: args.phone_numbers
-                    },
-                    skills: {
-                        $each: args.skills
-                    }
-                },
-            }
             
-            const insertOrUpdate = await PeopleModel.findOneAndUpdate( identifier, updateValues, { upsert: true, new: true } );
+            let updateValues: any = {
+                $set: {
+                    image: args.image,
+                    first_name: args.first_name,
+                    middle_name: args.middle_name,
+                    middle_initial: args.middle_initial,
+                    last_name: args.last_name,
+                    full_name: args.full_name,
+                    linkedin_url: args.linkedin_url,
+                    linkedin_username: args.linkedin_username,
+                    linkedin_id: args.linkedin_id,
+                    industry: args.industry,
+                    job_title: args.job_title,
+                    job_company_name: args.job_company_name,
+                    job_company_location_country: args.job_company_location_country,
+                    job_company_location_continent: args.job_company_location_continent,
+                    location_continent: args.location_continent,
+                    location_country: args.location_country,
+                },
+                $addToSet: {}, // this will update existing array or set a new 
+            }
+
+            // This are the arrays need to be updated if value is present in the request
+            if(args.emails && args.emails.length > 0){
+                updateValues['$addToSet']['emails'] = { $each: args.emails };
+            }
+            if(args.phone_numbers && args.phone_numbers.length > 0){
+                updateValues['$addToSet']['phone_numbers'] = { $each: args.phone_numbers };
+            }
+            if(args.telephone_numbers && args.telephone_numbers.length > 0){
+                updateValues['$addToSet']['telephone_numbers'] = { $each: args.telephone_numbers };
+            }
+            if(args.skills && args.skills.length > 0){
+                updateValues['$addToSet']['skills'] = { $each: args.skills };
+            }
+            if(args.profiles && args.profiles.length > 0){
+                updateValues['$addToSet']['profiles'] = { $each: args.profiles };
+            }
+            if(args.education && args.education.length > 0){
+                updateValues['$addToSet']['education'] = { $each: args.education };
+            }
+            if(args.interest && args.interest.length > 0){
+                updateValues['$addToSet']['interest'] = { $each: args.interest };
+            }
+            if(args.interest && args.interest.length > 0){
+                updateValues['$addToSet']['interest'] = { $each: args.interest };
+            }
+
+            // Insert or Update
+            const insertOrUpdate = await PeopleModel.findOneAndUpdate(
+                                                        identifier, 
+                                                        updateValues , 
+                                                        { upsert: true, new: true } 
+                                                    );
 
             return insertOrUpdate;
 
