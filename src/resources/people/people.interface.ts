@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 export default interface Post extends Document {
     _id?: string;
     id?: string;
-    image?: string // not avaialbel in collection, but frontend will have this
+    image?: string
     full_name?: string;
     first_name?: string;
     middle_initial?: string;

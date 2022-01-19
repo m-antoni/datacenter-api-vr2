@@ -113,6 +113,7 @@ class PeopleService {
                     job_company_location_continent: args.job_company_location_continent,
                     location_continent: args.location_continent,
                     location_country: args.location_country,
+                    
                 },
                 $addToSet: {}, // this will update existing array or set a new 
             }
@@ -139,9 +140,10 @@ class PeopleService {
             if(args.interest && args.interest.length > 0){
                 updateValues['$addToSet']['interest'] = { $each: args.interest };
             }
-            if(args.interest && args.interest.length > 0){
-                updateValues['$addToSet']['interest'] = { $each: args.interest };
+            if(args.experience && args.experience.length > 0){
+                updateValues['$addToSet']['experience'] = { $each: args.experience };
             }
+   
 
             // Insert or Update
             const insertOrUpdate = await PeopleModel.findOneAndUpdate(
