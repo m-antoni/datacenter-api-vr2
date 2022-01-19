@@ -60,9 +60,7 @@ class PeopleService {
             }
             else if(summary === 'us')
             {
-                /**
-                 * Show summary total users in United States
-                 */
+                /*** Show summary total users in United States */
                  pipeline = [
                     { $match: { location_country: this.default_country } },
                     { $group: { _id: "$location_country", total: { $sum: 1 } } },
@@ -77,9 +75,6 @@ class PeopleService {
                     { $project: { _id: 0, full_name: 1, linkedin_url: 1, location_continent: 1, location_country: 1 } }
                 ];
             }
-
-
-            
          
             const aggregate = this.people.aggregate(pipeline);
 
@@ -93,12 +88,13 @@ class PeopleService {
         }
     }
 
-
+    
+    /** Insert And Update User Data */
     public async insertAndUpdateUserService(args: People): Promise <Object | void> {
         try {
             
             const identifier = { linkedin_url: args.linkedin_url };
-            
+
             let updateValues: any = {
                 $set: {
                     image: args.image,
@@ -162,8 +158,33 @@ class PeopleService {
     }
 
 
+    /** Delete User by linkedin_url */
+    public async deleteUserService(linkedin_url: string): Promise <Object | void> {
+        
+        try {
+           
+            const result = await PeopleModel.deleteOne({ linkedin_url });
 
-    
+            let message: string;
+            let count: any;
+
+            if(result.deletedCount === 0) {
+                message = 'User not found, delete failed';
+            }else{
+                message = 'User Deleted Successfully';
+            }
+
+            count = result.deletedCount;
+
+            return {
+                count,
+                message
+            };
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
 }
 
 

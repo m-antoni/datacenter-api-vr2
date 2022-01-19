@@ -27,6 +27,7 @@ class PeopleController implements Controller {
         // inject validation if needed
         this.router.get(`${this.path}/user`, this.searchByUser);
         this.router.post(`${this.path}/user`, this.insertAndUpdateUser);
+        this.router.delete(`${this.path}/user/delete`, this.deleteUser);
     }
 
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -75,7 +76,21 @@ class PeopleController implements Controller {
     }
 
 
-    
+    /** Delete User by linkedin_url */
+    private deleteUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+        try {
+            
+            const { linkedin_url } = req.body;
+
+            const data = await this.PeopleService.deleteUserService(linkedin_url);
+            
+            res.status(200).json({ data });
+
+        } catch (error) {
+            console.log(error);
+            next(new HttpException(400, 'Cannot delete this user, something went wrong'));
+        }
+    }
 
 }
 
