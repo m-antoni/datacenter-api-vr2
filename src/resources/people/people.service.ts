@@ -58,15 +58,6 @@ class PeopleService {
                     { $project: { _id: 0, full_name: 1, location_continent: 1, location_country: 1, linkedin_url: 1 } }
                 ];
             }
-            else if(summary === 'us')
-            {
-                /*** Show summary total users in United States */
-                 pipeline = [
-                    { $match: { location_country: this.default_country } },
-                    { $group: { _id: "$location_country", total: { $sum: 1 } } },
-                    { $project: { _id: 0, location_country: "$_id", total_users: "$total" } }
-                ];
-            }
             else
             {
                 pipeline = [
@@ -75,6 +66,17 @@ class PeopleService {
                     { $project: { _id: 0, full_name: 1, linkedin_url: 1, location_continent: 1, location_country: 1 } }
                 ];
             }
+
+
+            // if(summary === 'us')
+            // {
+            //     /*** Show summary total users in United States */
+            //     pipeline = [
+            //         { $match: { location_country: this.default_country } },
+            //         { $group: { _id: "$location_country", total: { $sum: 1 } } },
+            //         { $project: { _id: 0, location_country: "$_id", total_users: "$total" } }
+            //     ];
+            // }
          
             const aggregate = this.people.aggregate(pipeline);
 

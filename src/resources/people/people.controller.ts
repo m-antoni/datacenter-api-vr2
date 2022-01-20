@@ -33,10 +33,9 @@ class PeopleController implements Controller {
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
-            const { first_name, last_name, summary, linkedin_url, search_text, page, limit, sortby = 'desc' } = req.query as any;
+            const { first_name, last_name, linkedin_url, search_text, page, limit, sortby = 'desc' } = req.query as any;
 
             const searchParams: SearchQuery = {
-                summary,
                 linkedin_url,
                 search_text,
                 sortby,
