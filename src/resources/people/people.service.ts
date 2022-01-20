@@ -167,21 +167,7 @@ class PeopleService {
            
             const result = await PeopleModel.deleteOne({ linkedin_url });
 
-            let message: string;
-            let count: any;
-
-            if(result.deletedCount === 0) {
-                message = 'User not found, delete failed';
-            }else{
-                message = 'User Deleted Successfully';
-            }
-
-            count = result.deletedCount;
-
-            return {
-                count,
-                message
-            };
+            return result;
 
         } catch (error) {
             console.log(error)

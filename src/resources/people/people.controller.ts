@@ -48,10 +48,14 @@ class PeopleController implements Controller {
 
             if(linkedin_url && search_text) { next(new HttpException(400, 'Invalid parameters given')); }
 
-            const data = await this.PeopleService.searchByUserService(searchParams);
+            const data: any = await this.PeopleService.searchByUserService(searchParams);
             
-            res.status(200).json({ data });
+            if(data.docs.length === 0){
 
+                res.status(404).json({ status: 404, message: "User not found" })
+            }else{
+                res.status(200).json({ data });
+            }
          
         } catch (error) {
             console.log(error)
@@ -71,7 +75,7 @@ class PeopleController implements Controller {
 
         } catch (error) {
              console.log(error)
-            next(new HttpException(400, 'Cannot insert something went wrong'));  
+            next(new HttpException(400, 'User Cannot insert or updated, something went wrong'));  
         }
     }
 
@@ -82,10 +86,14 @@ class PeopleController implements Controller {
             
             const { linkedin_url } = req.body;
 
-            const data = await this.PeopleService.deleteUserService(linkedin_url);
-            
-            res.status(200).json({ data });
+            const data: any = await this.PeopleService.deleteUserService(linkedin_url);
 
+            if(data.deletedCount === 0) {
+                res.status(200).json({ status: 404, message: "User is not found, cannot be deleted." });
+            }else{
+                res.status(200).json({ status: 200, message: "User deleted successfully" });
+            }
+        
         } catch (error) {
             console.log(error);
             next(new HttpException(400, 'Cannot delete this user, something went wrong'));
