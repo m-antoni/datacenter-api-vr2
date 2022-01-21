@@ -38,8 +38,8 @@ const PeopleSchema = new Schema(
         location_continent: String,
         image: String,
         emails: [],
-        phone_numbers: [],
-        telephone_numbers: [],
+        phone_numbers: [], // this is telephone
+        mobile_numbers: [], // added phone 
         experience: [],
         education: [],
         profiles: [],

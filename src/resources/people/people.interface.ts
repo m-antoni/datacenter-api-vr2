@@ -32,12 +32,8 @@ export default interface Post extends Document {
     linkedin_connections?: number;
     summary?: string;
     phone_numbers?: [];
-    emails?: [
-        {
-            type: string,
-            address: string
-        }
-    ];
+    mobile_numbers?: [];
+    emails?: [];
     telephone_numbers?: [];
     skills?: string[];
     location_name?: string;

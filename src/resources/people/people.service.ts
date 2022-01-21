@@ -21,16 +21,20 @@ class PeopleService {
     /** Search User  */
     public async searchByUserService(args: SearchQuery) : Promise<Object> {
     
-        let { summary, linkedin_url, search_text, sortby, options } = args; 
+        let { summary, linkedin_url, job_title, job_company_name, search_text, sortby, options } = args; 
 
         let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
 
         let pipeline;
-        
+    
+
         try {
 
             if(linkedin_url)
             {
+                console.log(linkedin_url);
+                console.log(job_company_name);
+                console.log(job_title);
                 pipeline = [
                     {
                         $match: { 
@@ -38,6 +42,16 @@ class PeopleService {
                                 { location_country: this.default_country },
                                 { linkedin_url: linkedin_url }
                             ]
+                            // $and: [
+                            //     {
+                            //         $or: [
+                            //             { linkedin_url: linkedin_url },
+                            //             { job_title: job_title },
+                            //             { job_company_name: job_company_name }
+                            //         ]
+                            //     },
+                            //     { location_country: this.default_country }
+                            // ],
                         }, 
                     },
                     { $sort: { full_name: sortVal }},
@@ -45,6 +59,7 @@ class PeopleService {
             }
             else if(search_text)
             {
+                
                 pipeline = [
                     { 
                         $match: {
@@ -60,6 +75,7 @@ class PeopleService {
             }
             else
             {
+             
                 pipeline = [
                     { $match: { location_country: this.default_country } },
                     { $sort: { full_name: sortVal } },
@@ -115,7 +131,6 @@ class PeopleService {
                     job_company_location_continent: args.job_company_location_continent,
                     location_continent: args.location_continent,
                     location_country: args.location_country,
-                    
                 },
                 $addToSet: {}, // this will update existing array or set a new 
             }
@@ -127,8 +142,8 @@ class PeopleService {
             if(args.phone_numbers && args.phone_numbers.length > 0){
                 updateValues['$addToSet']['phone_numbers'] = { $each: args.phone_numbers };
             }
-            if(args.telephone_numbers && args.telephone_numbers.length > 0){
-                updateValues['$addToSet']['telephone_numbers'] = { $each: args.telephone_numbers };
+            if(args.mobile_numbers && args.mobile_numbers.length > 0){
+                updateValues['$addToSet']['mobile_numbers'] = { $each: args.mobile_numbers };
             }
             if(args.skills && args.skills.length > 0){
                 updateValues['$addToSet']['skills'] = { $each: args.skills };

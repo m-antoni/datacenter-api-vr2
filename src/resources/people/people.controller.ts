@@ -33,10 +33,12 @@ class PeopleController implements Controller {
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
-            const { first_name, last_name, linkedin_url, search_text, page, limit, sortby = 'desc' } = req.query as any;
+            const { job_title, job_company_name, last_name, linkedin_url, search_text, page, limit, sortby = 'desc' } = req.query as any;
 
             const searchParams: SearchQuery = {
                 linkedin_url,
+                job_title,
+                job_company_name,
                 search_text,
                 sortby,
                 options: {
@@ -45,13 +47,14 @@ class PeopleController implements Controller {
                 }
             }
 
+
             if(linkedin_url && search_text) { next(new HttpException(400, 'Invalid parameters given')); }
 
             const data: any = await this.PeopleService.searchByUserService(searchParams);
             
             if(data.docs.length === 0){
-
-                res.status(404).json({ status: 404, message: "User not found" })
+                // requested by ms teff success if data is null 
+                res.status(200).json({ data: [], message: "User not found" })
             }else{
                 res.status(200).json({ data });
             }
