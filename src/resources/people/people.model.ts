@@ -10,6 +10,7 @@ const PeopleSchema = new Schema(
         middle_initial: String,
         middle_name: String,
         last_name: String,
+        gender: String,
         linkedin_url: {
             type: String,
             required: true

@@ -4,10 +4,6 @@ import SeachQuery from './interfaces/people.searchquery.interface';
 import { link, number } from 'joi';
 import SearchQuery from './interfaces/people.searchquery.interface';
 
-interface ExactContinent {
-    exact: string | undefined
-}
-
 enum SortBy {
     asc = 1,
     desc = -1
@@ -21,37 +17,42 @@ class PeopleService {
     /** Search User  */
     public async searchByUserService(args: SearchQuery) : Promise<Object> {
     
-        let { summary, linkedin_url, job_title, job_company_name, search_text, sortby, options } = args; 
+        let { summary, first_name, last_name, linkedin_url, job_title, job_company_name, search_text, sortby, options } = args; 
 
         let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
 
         let pipeline;
-    
 
         try {
 
-            if(linkedin_url)
+            if(linkedin_url || first_name)
             {
-                console.log(linkedin_url);
-                console.log(job_company_name);
-                console.log(job_title);
+                console.log("single user block")
+
                 pipeline = [
                     {
                         $match: { 
-                            $and: [
-                                { location_country: this.default_country },
-                                { linkedin_url: linkedin_url }
-                            ]
                             // $and: [
-                            //     {
-                            //         $or: [
-                            //             { linkedin_url: linkedin_url },
-                            //             { job_title: job_title },
-                            //             { job_company_name: job_company_name }
-                            //         ]
-                            //     },
-                            //     { location_country: this.default_country }
-                            // ],
+                            //     { location_country: this.default_country },
+                            //     { linkedin_url: linkedin_url }
+                            // ]
+                            $or:[
+                                {
+                                    $and: [
+                                        { location_country: this.default_country },
+                                        { linkedin_url: linkedin_url }
+                                    ]
+                                },
+                                {
+                                   $and: [
+                                        { location_country: this.default_country },
+                                        { first_name: first_name },
+                                        { last_name: last_name },
+                                        { job_title: job_title },
+                                        { job_company_name: job_company_name }
+                                   ]
+                                },
+                            ],
                         }, 
                     },
                     { $sort: { full_name: sortVal }},
@@ -59,7 +60,8 @@ class PeopleService {
             }
             else if(search_text)
             {
-                
+                console.log("search_text block")
+
                 pipeline = [
                     { 
                         $match: {
@@ -69,7 +71,7 @@ class PeopleService {
                             ]
                         } 
                     },
-                    { $sort : { full_name: sortVal } },
+                    { $sort : { _id: sortVal } },
                     { $project: { 
                             _id: 1,
                             linkedin_id: 1,
@@ -84,10 +86,11 @@ class PeopleService {
             }
             else
             {
-             
+                console.log("user list block")
+
                 pipeline = [
                     { $match: { location_country: this.default_country } },
-                    { $sort: { full_name: sortVal } },
+                    { $sort: { _id: sortVal } },
                     { $project: { 
                             _id: 1,
                             full_name: 1,
@@ -139,6 +142,7 @@ class PeopleService {
                     middle_initial: args.middle_initial,
                     last_name: args.last_name,
                     full_name: args.full_name,
+                    gender: args.gender,
                     linkedin_url: args.linkedin_url,
                     linkedin_username: args.linkedin_username,
                     linkedin_id: args.linkedin_id,

@@ -33,10 +33,12 @@ class PeopleController implements Controller {
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
-            const { job_title, job_company_name, last_name, linkedin_url, search_text, page, limit, sortby = 'desc' } = req.query as any;
+            const { first_name, last_name, job_title, job_company_name, linkedin_url, search_text, page, limit, sortby = 'desc' } = req.query as any;
 
             const searchParams: SearchQuery = {
                 linkedin_url,
+                first_name,
+                last_name,
                 job_title,
                 job_company_name,
                 search_text,
@@ -46,7 +48,6 @@ class PeopleController implements Controller {
                     limit,
                 }
             }
-
 
             if(linkedin_url && search_text) { next(new HttpException(400, 'Invalid parameters given')); }
 
