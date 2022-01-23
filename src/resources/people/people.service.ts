@@ -75,8 +75,13 @@ class PeopleService {
                     { $project: { 
                             _id: 1,
                             linkedin_id: 1,
-                            gender: 1,
+                            first_name: 1,
+                            last_name: 1, 
                             full_name: 1, 
+                            gender: 1,
+                            industry: 1,
+                            job_title: 1,
+                            job_company_name: 1,
                             location_continent: 1,
                             location_country: 1, 
                             linkedin_url: 1 
@@ -93,17 +98,21 @@ class PeopleService {
                     { $sort: { _id: sortVal } },
                     { $project: { 
                             _id: 1,
-                            full_name: 1,
                             linkedin_id: 1,
-                            gender: 1, 
-                            linkedin_url: 1, 
-                            location_continent: 1, 
-                            location_country: 1 
+                            first_name: 1,
+                            last_name: 1, 
+                            full_name: 1, 
+                            gender: 1,
+                            industry: 1,
+                            job_title: 1,
+                            job_company_name: 1,
+                            location_continent: 1,
+                            location_country: 1, 
+                            linkedin_url: 1 
                         } 
                     }
                 ];
             }
-
 
             // if(summary === 'us')
             // {
