@@ -70,7 +70,16 @@ class PeopleService {
                         } 
                     },
                     { $sort : { full_name: sortVal } },
-                    { $project: { _id: 0, full_name: 1, location_continent: 1, location_country: 1, linkedin_url: 1 } }
+                    { $project: { 
+                            _id: 1,
+                            linkedin_id: 1,
+                            gender: 1,
+                            full_name: 1, 
+                            location_continent: 1,
+                            location_country: 1, 
+                            linkedin_url: 1 
+                        } 
+                    }
                 ];
             }
             else
@@ -79,7 +88,16 @@ class PeopleService {
                 pipeline = [
                     { $match: { location_country: this.default_country } },
                     { $sort: { full_name: sortVal } },
-                    { $project: { _id: 0, full_name: 1, linkedin_url: 1, location_continent: 1, location_country: 1 } }
+                    { $project: { 
+                            _id: 1,
+                            full_name: 1,
+                            linkedin_id: 1,
+                            gender: 1, 
+                            linkedin_url: 1, 
+                            location_continent: 1, 
+                            location_country: 1 
+                        } 
+                    }
                 ];
             }
 
