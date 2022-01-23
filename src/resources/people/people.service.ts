@@ -69,8 +69,7 @@ class PeopleService {
                     },
                     { $sort : { _id: sortVal } },
                     { $project: { 
-                            _id: 0,
-                            id: "$_id",
+                            _id: 1,
                             linkedin_id: 1,
                             first_name: 1,
                             last_name: 1, 
@@ -92,8 +91,7 @@ class PeopleService {
                     { $match: { location_country: this.default_country } },
                     { $sort: { _id: sortVal } },
                     { $project: {
-                            _id: 0,
-                            id: "$_id",
+                            _id: 1,
                             linkedin_id: 1,
                             first_name: 1,
                             last_name: 1, 
