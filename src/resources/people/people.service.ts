@@ -27,8 +27,6 @@ class PeopleService {
 
             if(linkedin_url || first_name)
             {
-                console.log("single user block")
-
                 pipeline = [
                     {
                         $match: { 
@@ -60,8 +58,6 @@ class PeopleService {
             }
             else if(search_text)
             {
-                console.log("search_text block")
-
                 pipeline = [
                     { 
                         $match: {
@@ -73,7 +69,8 @@ class PeopleService {
                     },
                     { $sort : { _id: sortVal } },
                     { $project: { 
-                            _id: 1,
+                            _id: 0,
+                            id: "$_id",
                             linkedin_id: 1,
                             first_name: 1,
                             last_name: 1, 
@@ -91,13 +88,12 @@ class PeopleService {
             }
             else
             {
-                console.log("user list block")
-
                 pipeline = [
                     { $match: { location_country: this.default_country } },
                     { $sort: { _id: sortVal } },
-                    { $project: { 
-                            _id: 1,
+                    { $project: {
+                            _id: 0,
+                            id: "$_id",
                             linkedin_id: 1,
                             first_name: 1,
                             last_name: 1, 
