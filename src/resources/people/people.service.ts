@@ -156,20 +156,13 @@ class PeopleService {
                     job_company_location_continent: args.job_company_location_continent,
                     location_continent: args.location_continent,
                     location_country: args.location_country,
+                    emails: args.emails,
+                    phone_numbers: args.phone_numbers,
+                    mobile_numbers: args.mobile_numbers
                 },
                 $addToSet: {}, // this will update existing array or set a new 
             }
 
-            // This are the arrays need to be updated if value is present in the request
-            if(args.emails && args.emails.length > 0){
-                updateValues['$addToSet']['emails'] = { $each: args.emails };
-            }
-            if(args.phone_numbers && args.phone_numbers.length > 0){
-                updateValues['$addToSet']['phone_numbers'] = { $each: args.phone_numbers };
-            }
-            if(args.mobile_numbers && args.mobile_numbers.length > 0){
-                updateValues['$addToSet']['mobile_numbers'] = { $each: args.mobile_numbers };
-            }
             if(args.skills && args.skills.length > 0){
                 updateValues['$addToSet']['skills'] = { $each: args.skills };
             }
@@ -185,7 +178,6 @@ class PeopleService {
             if(args.experience && args.experience.length > 0){
                 updateValues['$addToSet']['experience'] = { $each: args.experience };
             }
-   
 
             // Insert or Update
             const insertOrUpdate = await PeopleModel.findOneAndUpdate(
