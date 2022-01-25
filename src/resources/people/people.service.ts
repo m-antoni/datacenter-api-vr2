@@ -198,7 +198,7 @@ class PeopleService {
     public async deleteUserService(linkedin_url: string): Promise <Object | void> {
         
         try {
-           
+            
             const result = await PeopleModel.deleteOne({ linkedin_url });
 
             return result;

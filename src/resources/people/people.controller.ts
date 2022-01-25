@@ -27,7 +27,7 @@ class PeopleController implements Controller {
         // inject validation if needed
         this.router.get(`${this.path}/user`, this.searchByUser);
         this.router.post(`${this.path}/user`, this.insertAndUpdateUser);
-        this.router.delete(`${this.path}/user/delete`, this.deleteUser);
+        this.router.post(`${this.path}/user/delete`, this.deleteUser);
     }
 
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -88,7 +88,8 @@ class PeopleController implements Controller {
         try {
             
             const { linkedin_url } = req.body;
-
+        
+            // console.log(linkedin_url)
             const data: any = await this.PeopleService.deleteUserService(linkedin_url);
 
             if(data.deletedCount === 0) {
