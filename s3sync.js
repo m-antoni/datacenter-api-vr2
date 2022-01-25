@@ -1,6 +1,9 @@
 // Load the AWS SDK for Node.js
 const S3 = require('aws-sdk/clients/s3');
 const fetch = require('node-fetch');
+var async = require("async");
+var Promise = require('promise');
+var forEach = require('async-foreach').forEach;
 var fs = require('fs'), JSONStream = require('JSONStream'), es = require('event-stream');
 const hyperquest = require('hyperquest');
 
@@ -23,49 +26,122 @@ var bucketParams = {
 let settings = { method: "Get" };
 
 var location_country =  new Object();
+let objectList = new Object();
 // Call S3 to list the buckets
-s3.listObjects(bucketParams, function(err, data) {
-  let objectList = data.Contents;
-  // console.log(objectList.Contents);
-  objectList.forEach(element => {
-  	const queueFile = async() => {
+var count = 1;
+let countPerURL =  new Object();
+var presignedURL = null;
+s3.listObjects(bucketParams, function(err, bucketList) {
+	objectList = bucketList.Contents;
 
-  		const getFiles = async() => {
+ //  	for (const element of objectList) {
 
-	  		const presignedURL = s3.getSignedUrl('getObject', {
-		    Bucket: bucketName,
-		    Key: element.Key,
-			    Expires: signedUrlExpireSeconds
-			});
+ //    	let presignedURL = s3.getSignedUrl('getObject', { Bucket: bucketName, Key: element.Key, Expires: signedUrlExpireSeconds});
+ //    	console.log(presignedURL);
+ //    	hyperquest(presignedURL)
+	//     .pipe(JSONStream.parse('*'))
+	//     .pipe(es.map((data, callback) => {
 
-			const parser = async () => {
-			  await hyperquest(presignedURL)
-			    .pipe(JSONStream.parse('*'))
-			    .pipe(es.map(async (data, callback) => {
-			      // console.log(data.location_country);
-			      // var obj = new Object();
+	//       	if(location_country[data.location_country] != null) 
+	//       	{
+	// 	    	location_country[data.location_country] += 1;
+	// 		} 
+	// 		else 
+	// 		{
+	// 	    	location_country[data.location_country] = 1;
+	// 	    }
 
-			      	if(location_country[data.location_country] != null) {
-				    	location_country[data.location_country] += 1;
-					} else {
-				    	location_country[data.location_country] = 1;
-				    }
-			      // callback(null, data);
-			      console.log(location_country);
-			    }))
-			}
-			await parser();
+	// 	    if(countPerURL[presignedURL] != null) 
+	//       	{
+	// 	    	countPerURL[presignedURL] += 1;
+	// 		} 
+	// 		else 
+	// 		{
+	// 	    	countPerURL[presignedURL] = 1;
+	// 	    }
 
-	  	}
+	// 	    console.log(countPerURL);
+	      	
+	//     }));
+	// }
+
+
+	const forLoop = async (element) => {
+	  console.log('Start')
+
+	  for (const element of objectList) {
+	  	console.log('get url');
+	  	await getUrl(element);
+	  	await getJson();
+	  	// await getJson();
+	  	// .getJson(presignedURL);
+
+	  	// .then( funtion(presignedURL) { 
+	  	// 	console.log(url); let waiting = getJson(url); 
+	  	// });
 	  	
-  		await getFiles();
-  	}
-  	
-  	queueFile();
-  	
-  	
-  });
+    	// let waiting = await getJson(url);
+	  }
+
+	  console.log('End');
+	}
+
+	const getJson = async () =>
+	{
+		await hyperquest(presignedURL)
+	    .pipe(JSONStream.parse('*'))
+	    .pipe(es.map((data, callback) => {
+
+	      	if(location_country[data.location_country] != null) 
+	      	{
+		    	location_country[data.location_country] += 1;
+			} 
+			else 
+			{
+		    	location_country[data.location_country] = 1;
+		    }
+		    console.log(presignedURL);
+	      	console.log(location_country);
+	    }));
+	}
+
+	function getUrl(element)
+	{
+		return new Promise(resolve => {
+		presignedURL =  s3.getSignedUrl('getObject', { Bucket: bucketName, Key: element.Key, Expires: signedUrlExpireSeconds});
+	    resolve();
+	  });
+
+		// presignedURL =  s3.getSignedUrl('getObject', { Bucket: bucketName, Key: element.Key, Expires: signedUrlExpireSeconds});
+		// return presignedURL;
+	}
+
+	forLoop();
 
 });
 
-console.log(location_country);
+
+
+
+
+// for(const element of objectList)
+// {
+	// console.log('forEach start');
+ //  	let presignedURL = s3.getSignedUrl('getObject', { Bucket: bucketName, Key: element.Key, Expires: signedUrlExpireSeconds});
+	//  hyperquest(presignedURL)
+ //    .pipe(JSONStream.parse('*'))
+ //    .pipe(es.map((data, callback) => {
+
+ //      	if(location_country[data.location_country] != null) 
+ //      	{
+	//     	location_country[data.location_country] += 1;
+	// 	} 
+	// 	else 
+	// 	{
+	//     	location_country[data.location_country] = 1;
+	//     }
+ //      	console.log(location_country);
+ //      	console.log(presignedURL);
+ //    }));
+// }
+
