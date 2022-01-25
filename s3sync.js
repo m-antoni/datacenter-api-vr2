@@ -30,7 +30,7 @@ let objectList = new Object();
 // Call S3 to list the buckets
 var count = 1;
 let countPerURL =  new Object();
-var presignedURL = null;
+// var presignedURL = null;
 s3.listObjects(bucketParams, function(err, bucketList) {
 	objectList = bucketList.Contents;
 
@@ -71,8 +71,8 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 
 	  for (const element of objectList) {
 	  	console.log('get url');
-	  	await getUrl(element);
-	  	await getJson();
+	  	
+	  	await getJson(element);
 	  	// await getJson();
 	  	// .getJson(presignedURL);
 
@@ -86,8 +86,10 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 	  console.log('End');
 	}
 
-	const getJson = async () =>
+	const getJson = async (element) =>
 	{
+		let presignedURL = getUrl(element);
+		console.log(presignedURL);
 		await hyperquest(presignedURL)
 	    .pipe(JSONStream.parse('*'))
 	    .pipe(es.map((data, callback) => {
@@ -107,13 +109,8 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 
 	function getUrl(element)
 	{
-		return new Promise(resolve => {
-		presignedURL =  s3.getSignedUrl('getObject', { Bucket: bucketName, Key: element.Key, Expires: signedUrlExpireSeconds});
-	    resolve();
-	  });
-
-		// presignedURL =  s3.getSignedUrl('getObject', { Bucket: bucketName, Key: element.Key, Expires: signedUrlExpireSeconds});
-		// return presignedURL;
+		// let presignedURL =  s3.getSignedUrl('getObject', { Bucket: bucketName, Key: element.Key, Expires: signedUrlExpireSeconds});
+		return s3.getSignedUrl('getObject', { Bucket: bucketName, Key: element.Key, Expires: signedUrlExpireSeconds});
 	}
 
 	forLoop();
