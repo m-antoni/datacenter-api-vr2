@@ -223,12 +223,14 @@ class PeopleService {
 
             return result;
 
+            
         } catch (error) {
             console.log(error)
         }
     }
 
 }
+
 
 
 export default PeopleService;

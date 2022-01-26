@@ -110,4 +110,5 @@ class PeopleController implements Controller {
 }
 
 
+
 export default PeopleController;
