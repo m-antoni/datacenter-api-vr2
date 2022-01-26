@@ -44,5 +44,5 @@ export default interface Post extends Document {
     education?: [];
     profiles?: [];
     version_status?: {};
-    archived?: boolean;
+    archive?: boolean;
 }

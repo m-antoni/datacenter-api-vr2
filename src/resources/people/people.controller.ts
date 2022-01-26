@@ -26,14 +26,15 @@ class PeopleController implements Controller {
     private initialiseRoutes(): void {
         // inject validation if needed
         this.router.get(`${this.path}/user`, this.searchByUser);
+        this.router.get(`${this.path}/user/archive`, this.getAllArchiveUser);
         this.router.post(`${this.path}/user`, this.insertAndUpdateUser);
-        this.router.post(`${this.path}/user/archived-or-restore`, this.archivedUser);
+        this.router.post(`${this.path}/user/archive-or-restore`, this.archivedOrRestoreUser);
     }
 
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
-            const { first_name, last_name, job_title, job_company_name, linkedin_url, search_text, page, limit, sortby = 'desc' } = req.query as any;
+            const { first_name, last_name, job_title, job_company_name, linkedin_url, search_text, page, limit, sortby = 'desc', archive } = req.query as any;
 
             const searchParams: SearchQuery = {
                 linkedin_url,
@@ -43,6 +44,7 @@ class PeopleController implements Controller {
                 job_company_name,
                 search_text,
                 sortby,
+                archive, 
                 options: {
                     page,
                     limit,
@@ -84,7 +86,7 @@ class PeopleController implements Controller {
 
 
     /** Archived Or Restore User by linkedin_url */
-    private archivedUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+    private archivedOrRestoreUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
             const { linkedin_url, type } = req.body;
@@ -94,7 +96,7 @@ class PeopleController implements Controller {
                 type
             }
 
-            const data: any = await this.PeopleService.archivedUserService(params);
+            const data: any = await this.PeopleService.archivedOrRestoreUserService(params);
 
             if(data === null) {
                 next(new HttpException(400, 'Cannot arhived or restore this user, something went wrong'));
@@ -107,6 +109,32 @@ class PeopleController implements Controller {
             next(new HttpException(400, 'Cannot arhived or restore this user, something went wrong'));
         }
     }
+
+
+    /* Get All Archive Users */
+    private getAllArchiveUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+        try {
+            
+            const { page, limit, sortby = 'desc', archive } = req.query as any;
+
+            const searchParams: SearchQuery = {
+                sortby,
+                options: {
+                    page,
+                    limit,
+                }
+            }
+
+            const data: any = await this.PeopleService.getArchiveUserService(searchParams);
+            
+            res.status(200).json({ data });
+         
+        } catch (error) {
+            console.log(error)
+            next(new HttpException(400, 'Cannot make a search something went wrong.'));            
+        }
+    }
+
 }
 
 

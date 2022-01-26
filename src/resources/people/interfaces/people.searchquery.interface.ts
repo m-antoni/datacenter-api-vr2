@@ -9,6 +9,7 @@ interface SearchQuery {
     last_name?: string;
     summary?: string | boolean;
     sortby?: string; // custom sort
+    archive?: boolean;
     options: {
         page: number | undefined;
         limit: number | undefined;

@@ -47,7 +47,7 @@ const PeopleSchema = new Schema(
         interest: [],
         skills: [],
         version_status: {},
-        archived: Boolean
+        archive: Boolean
     },
     {
         versionKey: false // get rid of _v:0 field

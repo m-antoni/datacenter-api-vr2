@@ -30,22 +30,18 @@ class PeopleService {
                 pipeline = [
                     {
                         $match: { 
-                            // $and: [
-                            //     { location_country: this.default_country },
-                            //     { linkedin_url: linkedin_url }
-                            // ]
                             $or:[
                                 {
                                     $and: [
                                         { location_country: this.default_country },
                                         { linkedin_url: linkedin_url }
                                     ],
-                                    archived: { $exists: false }
+                                    archive: { $exists: false }
                                 },
                                 {
                                    $and: [
                                         { location_country: this.default_country },
-                                        { archived: { $exists: false } },
+                                        { archive: { $exists: false } },
                                         { first_name: first_name },
                                         { last_name: last_name },
                                         { job_title: job_title },
@@ -65,7 +61,7 @@ class PeopleService {
                         $match: {
                             $and: [
                                 { location_country: this.default_country },
-                                { archived: { $exists: false } },
+                                { archive: { $exists: false } },
                                 { $text: { $search: search_text } }
                             ]
                         } 
@@ -93,7 +89,7 @@ class PeopleService {
                 pipeline = [
                     { $match: { 
                             location_country: this.default_country,
-                            archived: { $exists: false }
+                            archive: { $exists: false }
                         } 
                     },
                     { $sort: { _id: sortVal } },
@@ -114,16 +110,6 @@ class PeopleService {
                     }
                 ];
             }
-
-            // if(summary === 'us')
-            // {
-            //     /*** Show summary total users in United States */
-            //     pipeline = [
-            //         { $match: { location_country: this.default_country } },
-            //         { $group: { _id: "$location_country", total: { $sum: 1 } } },
-            //         { $project: { _id: 0, location_country: "$_id", total_users: "$total" } }
-            //     ];
-            // }
          
             const aggregate = this.people.aggregate(pipeline);
 
@@ -202,18 +188,20 @@ class PeopleService {
 
 
     /** Archived Or Restore User by linkedin_url */
-    public async archivedUserService(args: any): Promise <Object | any> {
+    public async archivedOrRestoreUserService(args: any): Promise <Object | any> {
         
         try {
         
             const filter = { linkedin_url: args.linkedin_url };
 
-            let update: object;
+            let update;
 
             if(args.type === 'restore'){
-                update = { $unset: { archived: 1 }};
-            }else{
-                update = { $set: { archived: true  }};
+                update = { $unset: { archive: 1 }};
+            }
+            
+            if(args.type === 'archive'){
+                update = { $set: { archive: true  }};
             }
 
             const options = { new: true };
@@ -229,8 +217,55 @@ class PeopleService {
         }
     }
 
+
+
+    /** Get All Archive User  */
+    public async getArchiveUserService(args: SearchQuery) : Promise<Object> {
+    
+        let { sortby, options } = args; 
+
+        let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
+
+        try {
+
+            let pipeline = [
+                { 
+                    $match: { 
+                        location_country: this.default_country,
+                        archive: true
+                    } 
+                },
+                { $sort: { _id: sortVal } },
+                { $project: {
+                        _id: 1,
+                        linkedin_id: 1,
+                        first_name: 1,
+                        last_name: 1, 
+                        full_name: 1, 
+                        gender: 1,
+                        industry: 1,
+                        job_title: 1,
+                        job_company_name: 1,
+                        location_continent: 1,
+                        location_country: 1, 
+                        linkedin_url: 1 
+                    } 
+                }
+            ];
+         
+            const aggregate = this.people.aggregate(pipeline);
+
+            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, options)
+
+            return aggregatePaginate;
+
+        } catch (error) {
+            console.log(error)
+            throw new Error('Unable to get data');
+        }
+    }
+
+
 }
-
-
 
 export default PeopleService;
