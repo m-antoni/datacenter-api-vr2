@@ -39,11 +39,13 @@ class PeopleService {
                                     $and: [
                                         { location_country: this.default_country },
                                         { linkedin_url: linkedin_url }
-                                    ]
+                                    ],
+                                    archived: { $exists: false }
                                 },
                                 {
                                    $and: [
                                         { location_country: this.default_country },
+                                        { archived: { $exists: false } },
                                         { first_name: first_name },
                                         { last_name: last_name },
                                         { job_title: job_title },
@@ -63,6 +65,7 @@ class PeopleService {
                         $match: {
                             $and: [
                                 { location_country: this.default_country },
+                                { archived: { $exists: false } },
                                 { $text: { $search: search_text } }
                             ]
                         } 
@@ -88,7 +91,11 @@ class PeopleService {
             else
             {
                 pipeline = [
-                    { $match: { location_country: this.default_country } },
+                    { $match: { 
+                            location_country: this.default_country,
+                            archived: { $exists: false }
+                        } 
+                    },
                     { $sort: { _id: sortVal } },
                     { $project: {
                             _id: 1,
@@ -194,12 +201,25 @@ class PeopleService {
     }
 
 
-    /** Delete User by linkedin_url */
-    public async deleteUserService(linkedin_url: string): Promise <Object | void> {
+    /** Archived Or Restore User by linkedin_url */
+    public async archivedUserService(args: any): Promise <Object | any> {
         
         try {
-            
-            const result = await PeopleModel.deleteOne({ linkedin_url });
+        
+            const filter = { linkedin_url: args.linkedin_url };
+
+            let update: object;
+
+            if(args.type === 'restore'){
+                update = { $unset: { archived: 1 }};
+            }else{
+                update = { $set: { archived: true  }};
+            }
+
+            const options = { new: true };
+
+            // const result = await PeopleModel.deleteOne({ linkedin_url });
+            const result = await PeopleModel.findOneAndUpdate(filter, update, options);
 
             return result;
 
@@ -207,6 +227,7 @@ class PeopleService {
             console.log(error)
         }
     }
+
 }
 
 

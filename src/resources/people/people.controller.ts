@@ -27,7 +27,7 @@ class PeopleController implements Controller {
         // inject validation if needed
         this.router.get(`${this.path}/user`, this.searchByUser);
         this.router.post(`${this.path}/user`, this.insertAndUpdateUser);
-        this.router.post(`${this.path}/user/delete`, this.deleteUser);
+        this.router.post(`${this.path}/user/archived-or-restore`, this.archivedUser);
     }
 
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -83,27 +83,30 @@ class PeopleController implements Controller {
     }
 
 
-    /** Delete User by linkedin_url */
-    private deleteUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+    /** Archived Or Restore User by linkedin_url */
+    private archivedUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
-            const { linkedin_url } = req.body;
-        
-            // console.log(linkedin_url)
-            const data: any = await this.PeopleService.deleteUserService(linkedin_url);
+            const { linkedin_url, type } = req.body;
+    
+            const params = {
+                linkedin_url,
+                type
+            }
 
-            if(data.deletedCount === 0) {
-                res.status(200).json({ status: 404, message: "User is not found, cannot be deleted." });
+            const data: any = await this.PeopleService.archivedUserService(params);
+
+            if(data === null) {
+                next(new HttpException(400, 'Cannot arhived or restore this user, something went wrong'));
             }else{
-                res.status(200).json({ status: 200, message: "User deleted successfully" });
+                res.status(200).json({ status: 200, data, message: `User is ${type} successfully` });
             }
         
         } catch (error) {
             console.log(error);
-            next(new HttpException(400, 'Cannot delete this user, something went wrong'));
+            next(new HttpException(400, 'Cannot arhived or restore this user, something went wrong'));
         }
     }
-
 }
 
 
