@@ -13,6 +13,16 @@ class CollectionSettingService {
         
         try {
 
+            // Check if current setting is existing
+            const existing =  await this.collection_setting.findOne({ setting_name: 'collection-keys' });
+
+            if(existing){
+                return {
+                    data: null,
+                    message: 'collection-keys is already created, no need to run.'
+                }
+            }
+
             let pipeline = [
                 { 
                     "$project": {
