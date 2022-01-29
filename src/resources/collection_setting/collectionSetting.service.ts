@@ -43,14 +43,14 @@ class CollectionSettingService {
 
             const aggregate = await this.people.aggregate(pipeline);
 
-            // filter w/o ids
-            const keys: [] = aggregate[0]['keys'].sort();
+            const keys: [] = aggregate[0]['keys'];
 
-            const filterIds = <never[] | []>keys.filter((val:any) => (val !== "_id" && val !== "id"));
+            // filter w/o _id,id,version_status,archive
+            const filterKeys = <never[] | []>keys.filter((val:any) => (val !== "_id" && val !== "id" && val !== "archive" && val !== "version_status"));
             
             const params = {
                 setting_name: "collection-keys",
-                keys: filterIds,
+                keys: filterKeys.sort(),
                 description: "collection keys"
             };
 
@@ -63,7 +63,6 @@ class CollectionSettingService {
             console.log(error)
             throw new Error('Unable to save keys');
         }
-
     }
 
 

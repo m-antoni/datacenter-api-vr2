@@ -150,8 +150,10 @@ class PeopleService {
                     location_continent: args.location_continent,
                     location_country: args.location_country,
                     emails: args.emails,
+                    work_email: args.work_email,
                     phone_numbers: args.phone_numbers,
-                    mobile_numbers: args.mobile_numbers
+                    mobile_numbers: args.mobile_numbers,
+                    mobile_number: args.mobile_number,
                 },
                 $addToSet: {}, // this will update existing array or set a new 
             }

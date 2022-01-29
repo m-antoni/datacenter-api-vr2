@@ -39,8 +39,10 @@ const PeopleSchema = new Schema(
         location_continent: String,
         image: String,
         emails: [],
+        work_email: String,
         phone_numbers: [], // this is telephone
         mobile_numbers: [], // added phone 
+        mobile_number: String,
         experience: [],
         education: [],
         profiles: [],

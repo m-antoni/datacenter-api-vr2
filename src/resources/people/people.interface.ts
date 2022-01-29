@@ -33,7 +33,9 @@ export default interface Post extends Document {
     summary?: string;
     phone_numbers?: [];
     mobile_numbers?: [];
+    mobile_number?: string;
     emails?: [];
+    work_email?:[];
     telephone_numbers?: [];
     skills?: string[];
     location_name?: string;
