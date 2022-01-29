@@ -17,12 +17,10 @@ class CollectionSettingService {
             const existing =  await this.collection_setting.findOne({ setting_name: 'collection-keys' });
 
             if(existing){
-                return {
-                    data: null,
-                    message: 'collection-keys is already created, no need to run.'
-                }
+                return { data: null, message: 'collection-keys is already created, no need to run.'};
             }
 
+            /* Pipeline to get all the keys in collection */
             let pipeline = [
                 { 
                     "$project": {
@@ -42,18 +40,23 @@ class CollectionSettingService {
                     }
                 }
             ];
-    
+
             const aggregate = await this.people.aggregate(pipeline);
 
+            // filter w/o ids
+            const keys: [] = aggregate[0]['keys'].sort();
+
+            const filterIds = <never[] | []>keys.filter((val:any) => (val !== "_id" && val !== "id"));
+            
             const params = {
                 setting_name: "collection-keys",
-                keys: aggregate[0]['keys'],
+                keys: filterIds,
                 description: "collection keys"
             };
 
+            /* save  keys */
             const createData = await this.collection_setting.create(params);
 
-            // const aggregatePaginate = await this.people.aggregatePaginate(aggregate)
             return createData;
 
         } catch (error) {
