@@ -11,10 +11,7 @@ const PeopleSchema = new Schema(
         middle_name: String,
         last_name: String,
         gender: String,
-        linkedin_url: {
-            type: String,
-            required: true
-        },
+        linkedin_url: String,
         linkedin_username: String,
         linkedin_id: String,
         industry: String,
@@ -39,14 +36,17 @@ const PeopleSchema = new Schema(
         location_continent: String,
         image: String,
         emails: [],
+        work_email: String,
         phone_numbers: [], // this is telephone
         mobile_numbers: [], // added phone 
+        mobile_number: String,
         experience: [],
         education: [],
         profiles: [],
         interest: [],
         skills: [],
-        version_status: {}
+        version_status: {},
+        archive: Boolean
     },
     {
         versionKey: false // get rid of _v:0 field

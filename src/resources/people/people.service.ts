@@ -30,20 +30,18 @@ class PeopleService {
                 pipeline = [
                     {
                         $match: { 
-                            // $and: [
-                            //     { location_country: this.default_country },
-                            //     { linkedin_url: linkedin_url }
-                            // ]
                             $or:[
                                 {
                                     $and: [
                                         { location_country: this.default_country },
                                         { linkedin_url: linkedin_url }
-                                    ]
+                                    ],
+                                    archive: { $exists: false }
                                 },
                                 {
                                    $and: [
                                         { location_country: this.default_country },
+                                        { archive: { $exists: false } },
                                         { first_name: first_name },
                                         { last_name: last_name },
                                         { job_title: job_title },
@@ -63,6 +61,7 @@ class PeopleService {
                         $match: {
                             $and: [
                                 { location_country: this.default_country },
+                                { archive: { $exists: false } },
                                 { $text: { $search: search_text } }
                             ]
                         } 
@@ -88,7 +87,11 @@ class PeopleService {
             else
             {
                 pipeline = [
-                    { $match: { location_country: this.default_country } },
+                    { $match: { 
+                            location_country: this.default_country,
+                            archive: { $exists: false }
+                        } 
+                    },
                     { $sort: { _id: sortVal } },
                     { $project: {
                             _id: 1,
@@ -107,16 +110,6 @@ class PeopleService {
                     }
                 ];
             }
-
-            // if(summary === 'us')
-            // {
-            //     /*** Show summary total users in United States */
-            //     pipeline = [
-            //         { $match: { location_country: this.default_country } },
-            //         { $group: { _id: "$location_country", total: { $sum: 1 } } },
-            //         { $project: { _id: 0, location_country: "$_id", total_users: "$total" } }
-            //     ];
-            // }
          
             const aggregate = this.people.aggregate(pipeline);
 
@@ -157,8 +150,10 @@ class PeopleService {
                     location_continent: args.location_continent,
                     location_country: args.location_country,
                     emails: args.emails,
+                    work_email: args.work_email,
                     phone_numbers: args.phone_numbers,
-                    mobile_numbers: args.mobile_numbers
+                    mobile_numbers: args.mobile_numbers,
+                    mobile_number: args.mobile_number,
                 },
                 $addToSet: {}, // this will update existing array or set a new 
             }
@@ -194,20 +189,176 @@ class PeopleService {
     }
 
 
-    /** Delete User by linkedin_url */
-    public async deleteUserService(linkedin_url: string): Promise <Object | void> {
+    /** Archived Or Restore User by linkedin_url */
+    public async archivedOrRestoreUserService(args: any): Promise <Object | any> {
         
         try {
+        
+            const filter = { linkedin_url: args.linkedin_url };
+
+            let update;
+
+            if(args.type === 'restore'){
+                update = { $unset: { archive: 1 }};
+            }
             
-            const result = await PeopleModel.deleteOne({ linkedin_url });
+            if(args.type === 'archive'){
+                update = { $set: { archive: true  }};
+            }
+
+            const options = { new: true };
+
+            // const result = await PeopleModel.deleteOne({ linkedin_url });
+            const result = await PeopleModel.findOneAndUpdate(filter, update, options);
 
             return result;
 
+            
         } catch (error) {
             console.log(error)
         }
     }
-}
 
+
+
+    /** Get All Archive User  */
+    public async getArchiveUserService(args: SearchQuery) : Promise<Object> {
+    
+        let { sortby, options } = args; 
+
+        let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
+
+        try {
+
+            let pipeline = [
+                { 
+                    $match: { 
+                        location_country: this.default_country,
+                        archive: true
+                    } 
+                },
+                { $sort: { _id: sortVal } },
+                { $project: {
+                        _id: 1,
+                        linkedin_id: 1,
+                        first_name: 1,
+                        last_name: 1, 
+                        full_name: 1, 
+                        gender: 1,
+                        industry: 1,
+                        job_title: 1,
+                        job_company_name: 1,
+                        location_continent: 1,
+                        location_country: 1, 
+                        linkedin_url: 1 
+                    } 
+                }
+            ];
+         
+            const aggregate = this.people.aggregate(pipeline);
+
+            const aggregatePaginate = await this.people.aggregatePaginate(aggregate, options)
+
+            return aggregatePaginate;
+
+        } catch (error) {
+            console.log(error)
+            throw new Error('Unable to get data');
+        }
+    }
+
+
+
+      
+    /** Insert Imported JSON from excel/csv */
+    public async insertExcelDataService (args: SearchQuery): Promise<Object>{
+
+        let { excel_data, columns_to_fields } = args;
+
+        try {
+        
+            const typeArrayFields = ["emails", "phone_numbers", "mobile_numbers","experience", "skills", "interest", "profiles", "education"];
+
+            let finalArr:any = [];
+
+            if(excel_data && columns_to_fields)
+            {
+                // map through excel data
+                excel_data.map((excel, index) => 
+                {   
+                    let newObj: any = {};
+                    // get the key and val
+                    for (const [key, val] of Object.entries(excel)) 
+                    {
+                        // compare the key and column here to set field and values to store
+                        columns_to_fields.map((col: any) => {
+                            if(col.column === key)
+                            {   
+                                if(val === "")
+                                {
+                                    newObj[col.set_field] = ""; //  empty cell in column
+                                }
+                                else if(typeArrayFields.includes(col.set_field))
+                                {
+                                    let strVal = val;
+                                    if(strVal != ""){
+                                        newObj[col.set_field] = (<string>strVal).toString().split(","); // creating objects field:value
+                                    }else{
+                                        newObj[col.set_field] = "";
+                                    }
+                                    console.log('RUN 2')
+                                }
+                                else
+                                {
+                                    console.log('RUN 3')
+                                    newObj[col.set_field] = val; // creating objects field:value
+                                }
+                            }
+                        })
+
+                        // add field:value default by united states
+                        newObj["location_country"] = this.default_country;
+                    }
+
+                    finalArr.push(newObj);
+               })
+    
+               console.log(finalArr)
+
+            }
+   
+            const insertParams: Array<any> = finalArr;
+
+            const data = this.people.insertMany(insertParams);
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new Error('Unable to save imported data');
+        }
+
+    }
+
+
+    public async checkIfUserExists (linkedin_url: string, location_country: string): Promise<string | null> {
+
+        let data = null;
+
+        try {
+            
+            const exists = await this.people.findOne({ linkedin_url: linkedin_url, location_country: location_country }, { linkedin_url: 1, _id: 0 });
+
+            console.log(exists);
+
+        } catch (err) {
+            console.log(err)
+        }
+
+        return data;
+    }
+
+
+}
 
 export default PeopleService;

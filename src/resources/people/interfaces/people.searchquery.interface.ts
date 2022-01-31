@@ -9,7 +9,10 @@ interface SearchQuery {
     last_name?: string;
     summary?: string | boolean;
     sortby?: string; // custom sort
-    options: {
+    archive?: boolean;
+    excel_data?: [];
+    columns_to_fields?: any;
+    options?: {
         page: number | undefined;
         limit: number | undefined;
     }
