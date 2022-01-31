@@ -11,10 +11,7 @@ const PeopleSchema = new Schema(
         middle_name: String,
         last_name: String,
         gender: String,
-        linkedin_url: {
-            type: String,
-            required: true
-        },
+        linkedin_url: String,
         linkedin_username: String,
         linkedin_id: String,
         industry: String,

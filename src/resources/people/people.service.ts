@@ -268,6 +268,97 @@ class PeopleService {
     }
 
 
+
+      
+    /** Insert Imported JSON from excel/csv */
+    public async insertExcelDataService (args: SearchQuery): Promise<Object>{
+
+        let { excel_data, columns_to_fields } = args;
+
+        try {
+        
+            const typeArrayFields = ["emails", "phone_numbers", "mobile_numbers","experience", "skills", "interest", "profiles", "education"];
+
+            let finalArr:any = [];
+
+            if(excel_data && columns_to_fields)
+            {
+                // map through excel data
+                excel_data.map((excel, index) => 
+                {   
+                    let newObj: any = {};
+                    // get the key and val
+                    for (const [key, val] of Object.entries(excel)) 
+                    {
+                        // compare the key and column here to set field and values to store
+                        columns_to_fields.map((col: any) => {
+                            if(col.column === key)
+                            {   
+                                if(val === "")
+                                {
+                                    newObj[col.set_field] = ""; //  empty cell in column
+                                }
+                                else if(typeArrayFields.includes(col.set_field))
+                                {
+                                    let strVal = val;
+                                    if(strVal != ""){
+                                        newObj[col.set_field] = (<string>strVal).toString().split(","); // creating objects field:value
+                                    }else{
+                                        newObj[col.set_field] = "";
+                                    }
+                                    console.log('RUN 2')
+                                }
+                                else
+                                {
+                                    console.log('RUN 3')
+                                    newObj[col.set_field] = val; // creating objects field:value
+                                }
+                            }
+                        })
+
+                        // add field:value default by united states
+                        newObj["location_country"] = this.default_country;
+                    }
+
+                    finalArr.push(newObj);
+               })
+    
+               console.log(finalArr)
+
+            }
+   
+            const insertParams: Array<any> = finalArr;
+
+            const data = this.people.insertMany(insertParams);
+
+            return data;
+
+        } catch (error) {
+            console.log(error);
+            throw new Error('Unable to save imported data');
+        }
+
+    }
+
+
+    public async checkIfUserExists (linkedin_url: string, location_country: string): Promise<string | null> {
+
+        let data = null;
+
+        try {
+            
+            const exists = await this.people.findOne({ linkedin_url: linkedin_url, location_country: location_country }, { linkedin_url: 1, _id: 0 });
+
+            console.log(exists);
+
+        } catch (err) {
+            console.log(err)
+        }
+
+        return data;
+    }
+
+
 }
 
 export default PeopleService;

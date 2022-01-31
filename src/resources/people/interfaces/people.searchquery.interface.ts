@@ -10,7 +10,9 @@ interface SearchQuery {
     summary?: string | boolean;
     sortby?: string; // custom sort
     archive?: boolean;
-    options: {
+    excel_data?: [];
+    columns_to_fields?: any;
+    options?: {
         page: number | undefined;
         limit: number | undefined;
     }

@@ -52,7 +52,7 @@ class CollectionSettingController implements Controller {
         }
     }
 
-
+ 
 
 }
 

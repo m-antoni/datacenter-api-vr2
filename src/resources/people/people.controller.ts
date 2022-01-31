@@ -29,6 +29,7 @@ class PeopleController implements Controller {
         this.router.get(`${this.path}/user/archive`, this.getAllArchiveUser);
         this.router.post(`${this.path}/user`, this.insertAndUpdateUser);
         this.router.post(`${this.path}/user/archive-or-restore`, this.archivedOrRestoreUser);
+        this.router.post(`${this.path}/user/insert-excel`, this.insertExcelData);
     }
 
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -134,6 +135,30 @@ class PeopleController implements Controller {
             next(new HttpException(400, 'Cannot make a search something went wrong.'));            
         }
     }
+
+
+    /** Insert Imported JSON from excel/csv */
+    private insertExcelData = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+
+        try {
+
+            const { excel_data, columns_to_fields } = req.body;
+
+            const insertParams: SearchQuery = {
+                excel_data,
+                columns_to_fields
+            }
+
+            const data = await this.PeopleService.insertExcelDataService(insertParams);
+
+            res.status(201).json({ data });
+
+        } catch (error) {
+            console.log(error)
+            next(new HttpException(400, 'Cannot save excel data.'));
+        }
+    }
+    
 
 }
 
