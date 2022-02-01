@@ -267,8 +267,6 @@ class PeopleService {
         }
     }
 
-
-
       
     /** Insert Imported JSON from excel/csv */
     public async insertExcelDataService (args: SearchQuery): Promise<Object>{
@@ -280,6 +278,7 @@ class PeopleService {
             const typeArrayFields = ["emails", "phone_numbers", "mobile_numbers","experience", "skills", "interest", "profiles", "education"];
 
             let finalArr:any = [];
+            let linkedin_url_arr:any = [];
 
             if(excel_data && columns_to_fields)
             {
@@ -292,8 +291,17 @@ class PeopleService {
                     {
                         // compare the key and column here to set field and values to store
                         columns_to_fields.map((col: any) => {
+                            // console.log("ROOT", col, val)
                             if(col.column === key)
                             {   
+                                
+                                if(col.set_field === "linkedin_url")
+                                {   
+                                    if(!linkedin_url_arr.includes(val)){
+                                        linkedin_url_arr.push(val);
+                                    }
+                                }
+
                                 if(val === "")
                                 {
                                     newObj[col.set_field] = ""; //  empty cell in column
@@ -323,39 +331,35 @@ class PeopleService {
                     finalArr.push(newObj);
                })
     
-               console.log(finalArr)
-
+            //    console.log(finalArr)
             }
-   
+
+            // params to return
+            let data: any  = {
+                linkedin_urls: [],
+                inserts: [],
+            };
+      
+            // Validate Excel Data by linkedin_url
+            if(linkedin_url_arr.length > 0){
+                let exists = await this.people.find({ "linkedin_url": { "$in": linkedin_url_arr } }, { linkedin_url: 1 });
+                if(exists.length > 0){   
+                    data.linkedin_urls = exists;
+                    return data;
+                }
+            }
+            
+            // Insert All the excel data
             const insertParams: Array<any> = finalArr;
+            const insertMany = await this.people.insertMany(insertParams);
 
-            const data = this.people.insertMany(insertParams);
-
+            data.inserts = insertMany;
             return data;
 
         } catch (error) {
             console.log(error);
             throw new Error('Unable to save imported data');
         }
-
-    }
-
-
-    public async checkIfUserExists (linkedin_url: string, location_country: string): Promise<string | null> {
-
-        let data = null;
-
-        try {
-            
-            const exists = await this.people.findOne({ linkedin_url: linkedin_url, location_country: location_country }, { linkedin_url: 1, _id: 0 });
-
-            console.log(exists);
-
-        } catch (err) {
-            console.log(err)
-        }
-
-        return data;
     }
 
 

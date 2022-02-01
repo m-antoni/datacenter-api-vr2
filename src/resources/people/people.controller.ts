@@ -151,14 +151,15 @@ class PeopleController implements Controller {
 
             const data = await this.PeopleService.insertExcelDataService(insertParams);
 
-            res.status(201).json({ data });
+            res.status(201).json(data);
 
         } catch (error) {
             console.log(error)
             next(new HttpException(400, 'Cannot save excel data.'));
         }
     }
-    
+
+
 
 }
 
