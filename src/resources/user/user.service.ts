@@ -7,19 +7,9 @@ class UserService {
     /**
      * Register a new user
      */
-    public async register(
-        name: string,
-        email: string,
-        password: string,
-        role: string
-    ): Promise<string | Error> {
+    public async register(name: string,username: string, password: string,role: string   ): Promise<string | Error> {
         try {
-            const user = await this.user.create({
-                name,
-                email,
-                password,
-                role,
-            });
+            const user = await this.user.create({ name, username, password, role,});
 
             const accessToken = token.createToken(user);
 
@@ -32,19 +22,25 @@ class UserService {
     /**
      * Attempt to login a user
      */
-    public async login(
-        email: string,
-        password: string
-    ): Promise<string | Error> {
+    public async login(username: string, password: string): Promise<Object | Error> {
         try {
-            const user = await this.user.findOne({ email });
+            const user = await this.user.findOne({ username });
 
             if (!user) {
-                throw new Error('Unable to find user with that email address');
+                throw new Error('Unable to find user with that username');
             }
 
             if (await user.isValidPassword(password)) {
-                return token.createToken(user);
+
+                const userDetails = await this.user.findOne({ username }, { _id: 0, password: 0 });
+
+                const data = {
+                    token: token.createToken(user),
+                    user: userDetails
+                }
+
+                return data;
+
             } else {
                 throw new Error('Wrong credentials given');
             }
