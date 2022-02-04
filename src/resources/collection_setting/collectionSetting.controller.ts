@@ -3,6 +3,7 @@ import Controller from '@/utils/interfaces/controller.interface';
 import HttpException from '@/utils/exceptions/http.exception';
 import validationMiddleware from '@/middleware/validation.middleware';
 import CollectionSettingService from './collectionSetting.service';
+import authenticated from '@/middleware/authenticated.middleware';
 
 
 class CollectionSettingController implements Controller {
@@ -16,8 +17,8 @@ class CollectionSettingController implements Controller {
 
     private initialiseRoutes(): void {
         // inject validation if needed
-        this.router.get(`${this.path}/settings`, this.getSingleSetting);
-        this.router.get(`${this.path}/settings/create-keys`, this.createKeysToMap);
+        this.router.get(`${this.path}/settings`, authenticated, this.getSingleSetting);
+        this.router.get(`${this.path}/settings/create-keys`, authenticated, this.createKeysToMap);
     }
 
     /* Save keys of collection*/

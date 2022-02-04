@@ -7,7 +7,7 @@ class UserService {
     /**
      * Register a new user
      */
-    public async register(name: string,username: string, password: string,role: string   ): Promise<string | Error> {
+    public async register(name: string,username: string, password: string, role: string): Promise<string | Error> {
         try {
             const user = await this.user.create({ name, username, password, role,});
 

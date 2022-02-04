@@ -17,7 +17,7 @@ class PeopleService {
     /** Search User  */
     public async searchByUserService(args: SearchQuery) : Promise<Object> {
     
-        let { summary, first_name, last_name, linkedin_url, job_title, job_company_name, search_text, sortby, options } = args; 
+        let { first_name, last_name, linkedin_url, job_title, job_company_name, search_text, sortby, options } = args; 
 
         let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
 
@@ -51,7 +51,7 @@ class PeopleService {
                             ],
                         }, 
                     },
-                    { $sort: { full_name: sortVal }},
+                    { $sort: { _id: sortVal }},
                 ];
             }
             else if(search_text)

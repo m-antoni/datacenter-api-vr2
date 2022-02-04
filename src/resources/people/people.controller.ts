@@ -6,6 +6,7 @@ import validationMiddleware from '@/middleware/validation.middleware';
 import validate from '@/resources/post/post.validation';
 import PeopleService from '@/resources/people/people.service';
 import SearchQuery from './interfaces/people.searchquery.interface';
+import authenticated from '@/middleware/authenticated.middleware';
 
 
 interface SearchUser {
@@ -25,13 +26,13 @@ class PeopleController implements Controller {
 
     private initialiseRoutes(): void {
         // inject validation if needed
-        this.router.get(`${this.path}/user`, this.searchByUser);
-        this.router.get(`${this.path}/user/archive`, this.getAllArchiveUser);
-        this.router.post(`${this.path}/user`, this.insertAndUpdateUser);
-        this.router.post(`${this.path}/user/archive-or-restore`, this.archivedOrRestoreUser);
-        this.router.post(`${this.path}/user/insert-excel`, this.insertExcelData);
+        this.router.get(`${this.path}/user`, authenticated, this.searchByUser);
+        this.router.post(`${this.path}/user`, authenticated, this.insertAndUpdateUser);
+        this.router.get(`${this.path}/user/archive`, authenticated, this.getAllArchiveUser);
+        this.router.post(`${this.path}/user/archive-or-restore`, authenticated, this.archivedOrRestoreUser);
+        this.router.post(`${this.path}/user/insert-excel`, authenticated, this.insertExcelData);
     }
-
+    
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
         try {
             
@@ -148,6 +149,8 @@ class PeopleController implements Controller {
                 excel_data,
                 columns_to_fields
             }
+
+            // console.log(insertParams)
 
             const data = await this.PeopleService.insertExcelDataService(insertParams);
 
