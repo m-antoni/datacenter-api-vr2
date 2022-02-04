@@ -363,6 +363,32 @@ class PeopleService {
     }
 
 
+    /** Summary  */
+    public async getSummary(): Promise <Object | void> {
+        try {
+            
+            const pipeline = [
+                { 
+                    $match: { "location_country": "united states" } 
+                },
+                { 
+                    $group:{  _id: "$location_country", total: { $sum: 1 } } 
+                },
+                {
+                    $project: { location_country: "$_id", total: "$total", _id: 0 }
+                }
+            ]
+
+            const summary = await PeopleModel.aggregate(pipeline);
+
+            return summary;
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+
 }
 
 export default PeopleService;

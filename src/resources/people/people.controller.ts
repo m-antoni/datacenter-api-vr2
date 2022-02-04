@@ -31,6 +31,7 @@ class PeopleController implements Controller {
         this.router.get(`${this.path}/user/archive`, authenticated, this.getAllArchiveUser);
         this.router.post(`${this.path}/user/archive-or-restore`, authenticated, this.archivedOrRestoreUser);
         this.router.post(`${this.path}/user/insert-excel`, authenticated, this.insertExcelData);
+        this.router.get(`${this.path}/user/summary`, authenticated, this.getSummary);
     }
     
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -163,6 +164,20 @@ class PeopleController implements Controller {
     }
 
 
+    /** Summary */
+    private getSummary = async(req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+        try {
+            
+            const data = await this.PeopleService.getSummary();
+            
+            res.status(200).json(data);
+
+        } catch (error) {
+            console.log(error)
+            next(new HttpException(400, 'Cannot get the summary.'));
+            
+        }
+    }
 
 }
 
