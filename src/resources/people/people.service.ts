@@ -274,8 +274,9 @@ class PeopleService {
         let { excel_data, columns_to_fields } = args;
 
         try {
-        
-            const typeArrayFields = ["emails", "phone_numbers", "mobile_numbers","experience", "skills", "interest", "profiles", "education"];
+            
+            // this are the fields that are type array in the database
+            const fieldsArray = ["emails", "phone_numbers", "mobile_numbers","experience", "skills", "interest", "profiles", "education"];
 
             let finalArr:any = [];
             let linkedin_url_arr:any = [];
@@ -283,18 +284,20 @@ class PeopleService {
             if(excel_data && columns_to_fields)
             {
                 // map through excel data
+                // console.log("excel_data: ", excel_data)
                 excel_data.map((excel, index) => 
                 {   
-                    let newObj: any = {};
+                    let newObj: any = {}; // placeholder if new field to values
+                    let fieldsArrayValue: any = []; 
+
                     // get the key and val
                     for (const [key, val] of Object.entries(excel)) 
                     {
                         // compare the key and column here to set field and values to store
                         columns_to_fields.map((col: any) => {
-                            // console.log("ROOT", col, val)
+                            // console.log("inside map: ", col, val)
                             if(col.column === key)
                             {   
-                                
                                 if(col.set_field === "linkedin_url")
                                 {   
                                     if(!linkedin_url_arr.includes(val)){
@@ -306,15 +309,31 @@ class PeopleService {
                                 {
                                     newObj[col.set_field] = ""; //  empty cell in column
                                 }
-                                else if(typeArrayFields.includes(col.set_field))
+                                else if(fieldsArray.includes(col.set_field))
                                 {
                                     let strVal = val;
-                                    if(strVal != ""){
-                                        newObj[col.set_field] = (<string>strVal).toString().split(","); // creating objects field:value
-                                    }else{
+                                    if(strVal != "")
+                                    {
+                                        // check if value is comma separated
+                                        if((<string>strVal).indexOf(',') != -1 )
+                                        {
+                                            // get the comma separated values and push it to array.
+                                            let commaSeparatedArray = (<string>strVal).toString().replace(" ", "").split(",");
+                                            commaSeparatedArray.map((sepval: any) => fieldsArrayValue.push(sepval));
+                                            newObj[col.set_field] = fieldsArrayValue;
+                                        }
+                                        else
+                                        {
+                                            // just push value if not comma separated values
+                                            fieldsArrayValue.push((<string>strVal).replace(" ", ""));
+                                            newObj[col.set_field] = fieldsArrayValue;
+                                        }
+                                        // newObj[col.set_field] = (<string>strVal).toString().split(",") // creating objects field:value
+                                    }
+                                    else
+                                    {
                                         newObj[col.set_field] = "";
                                     }
-                                    console.log('RUN 2')
                                 }
                                 else
                                 {
@@ -340,7 +359,7 @@ class PeopleService {
                 inserts: [],
             };
       
-            // Validate Excel Data by linkedin_url
+            // Check if linkedin_url already exists in the collection
             if(linkedin_url_arr.length > 0){
                 let exists = await this.people.find({ "linkedin_url": { "$in": linkedin_url_arr } }, { linkedin_url: 1 });
                 if(exists.length > 0){   
@@ -348,12 +367,15 @@ class PeopleService {
                     return data;
                 }
             }
-            
+
+            // console.log(finalArr);
+            // return {};
+
             // Insert All the excel data
             const insertParams: Array<any> = finalArr;
             const insertMany = await this.people.insertMany(insertParams);
-
             data.inserts = insertMany;
+
             return data;
 
         } catch (error) {

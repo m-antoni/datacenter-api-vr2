@@ -141,7 +141,7 @@ class PeopleController implements Controller {
 
     /** Insert Imported JSON from excel/csv */
     private insertExcelData = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
-
+        
         try {
 
             const { excel_data, columns_to_fields } = req.body;
