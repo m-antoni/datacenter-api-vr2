@@ -1,7 +1,7 @@
 import PeopleModel from '@/resources/people/people.model';
 import People from '@/resources/people/people.interface';
 import SeachQuery from './interfaces/people.searchquery.interface';
-import { link, number } from 'joi';
+import { link, number, string } from 'joi';
 import SearchQuery from './interfaces/people.searchquery.interface';
 
 enum SortBy {
@@ -278,7 +278,7 @@ class PeopleService {
             // this are the fields that are type array in the database
             const fieldsArray = ["emails", "phone_numbers", "mobile_numbers","experience", "skills", "interest", "profiles", "education"];
 
-            let finalArr:any = [];
+            let final_to_store:any = [];
             let linkedin_url_arr:any = [];
 
             if(excel_data && columns_to_fields)
@@ -288,7 +288,16 @@ class PeopleService {
                 excel_data.map((excel, index) => 
                 {   
                     let newObj: any = {}; // placeholder if new field to values
-                    let fieldsArrayValue: any = []; 
+                    let fields_key_obj: any = {
+                        "emails": [],
+                        "phone_numbers": [],
+                        "mobile_numbers": [],
+                        "experience":[],
+                        "skills": [],
+                        "interest": [],
+                        "profiles": [],
+                        "education": []
+                    };
 
                     // get the key and val
                     for (const [key, val] of Object.entries(excel)) 
@@ -298,8 +307,7 @@ class PeopleService {
                             // console.log("inside map: ", col, val)
                             if(col.column === key)
                             {   
-                                if(col.set_field === "linkedin_url")
-                                {   
+                                if(col.set_field === "linkedin_url"){   
                                     if(!linkedin_url_arr.includes(val)){
                                         linkedin_url_arr.push(val);
                                     }
@@ -307,32 +315,40 @@ class PeopleService {
 
                                 if(val === "")
                                 {
-                                    newObj[col.set_field] = ""; //  empty cell in column
+                                    newObj[col.set_field] = ""; // empty cell in column
                                 }
                                 else if(fieldsArray.includes(col.set_field))
                                 {
-                                    let strVal = val;
-                                    if(strVal != "")
+                                    let setVal = val;
+                                    if(typeof setVal !== 'string' && typeof setVal === 'number')
                                     {
-                                        // check if value is comma separated
-                                        if((<string>strVal).indexOf(',') != -1 )
-                                        {
-                                            // get the comma separated values and push it to array.
-                                            let commaSeparatedArray = (<string>strVal).toString().replace(" ", "").split(",");
-                                            commaSeparatedArray.map((sepval: any) => fieldsArrayValue.push(sepval));
-                                            newObj[col.set_field] = fieldsArrayValue;
-                                        }
-                                        else
-                                        {
-                                            // just push value if not comma separated values
-                                            fieldsArrayValue.push((<string>strVal).replace(" ", ""));
-                                            newObj[col.set_field] = fieldsArrayValue;
-                                        }
-                                        // newObj[col.set_field] = (<string>strVal).toString().split(",") // creating objects field:value
+                                        fields_key_obj[col.set_field].push(String(setVal));
+                                        newObj[col.set_field] = fields_key_obj[col.set_field];
                                     }
                                     else
                                     {
-                                        newObj[col.set_field] = "";
+                                        if(setVal != "")
+                                        {
+                                            // check if value is comma separated
+                                            if((<string>setVal).indexOf(',') != -1 )
+                                            {
+                                                // get the comma separated values and push it to array.
+                                                let commaSeparatedArray = (<string>setVal).toString().replace(" ", "").split(",");
+                                                commaSeparatedArray.map((sepval: any) => fields_key_obj[col.set_field].push(sepval));
+                                                newObj[col.set_field] = fields_key_obj[col.set_field];
+                                            }
+                                            else
+                                            {
+                                                // just push value if not comma separated values
+                                                fields_key_obj[col.set_field].push((<string>setVal).replace(" ", ""));
+                                                newObj[col.set_field] = fields_key_obj[col.set_field];
+                                            }
+                                            // newObj[col.set_field] = (<string>setVal).toString().split(",") // creating objects field:value
+                                        }
+                                        else
+                                        {
+                                            newObj[col.set_field] = "";
+                                        }
                                     }
                                 }
                                 else
@@ -346,11 +362,10 @@ class PeopleService {
                         // add field:value default by united states
                         newObj["location_country"] = this.default_country;
                     }
-
-                    finalArr.push(newObj);
+                    // push to final variable to store
+                    final_to_store.push(newObj);
                })
-    
-            //    console.log(finalArr)
+
             }
 
             // params to return
@@ -368,11 +383,11 @@ class PeopleService {
                 }
             }
 
-            // console.log(finalArr);
+            // console.log(final_to_store);
             // return {};
 
             // Insert All the excel data
-            const insertParams: Array<any> = finalArr;
+            const insertParams: Array<any> = final_to_store;
             const insertMany = await this.people.insertMany(insertParams);
             data.inserts = insertMany;
 
