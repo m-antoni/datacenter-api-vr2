@@ -10,10 +10,7 @@ function validationMiddleware(schema: Joi.Schema): RequestHandler {
         };
 
         try {
-            const value = await schema.validateAsync(
-                req.body,
-                validationOptions
-            );
+            const value = await schema.validateAsync(req.body, validationOptions);
             req.body = value;
             next();
         } catch (e: any) {
