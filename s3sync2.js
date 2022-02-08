@@ -8,7 +8,8 @@ var fs = require('fs'), JSONStream = require('JSONStream'), es = require('event-
 const hyperquest = require('hyperquest');
 var MongoClient = require('mongodb').MongoClient;
 var MongoUrl = "mongodb+srv://datacenter-user03:80YWAXIohLbFeZel@talently-cluster01.lavtd.mongodb.net/datacenter-db";
-
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 const bucketName = 'talentlylidump'
 const region = 'us-east-2'
 const accessKeyId = 'AKIAW7D5VTTAHMVSTUUD'
@@ -63,6 +64,11 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 
 		    var newPromise = new Promise(async (resolve, reject) => {
 
+		    	mongoose.connect('mongodb+srv://datacenter-user03:80YWAXIohLbFeZel@talently-cluster01.lavtd.mongodb.net/datacenter-db');
+
+				const PeoplesSchema = new Schema({}, { strict: false })
+				const PeopleCollection = mongoose.model('peoples', PeoplesSchema)
+
 		    	console.log('promise');
 		        await s3.getObject(params).createReadStream()
 		        .on('end', () => {
@@ -113,40 +119,34 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 
 				    		var InsertPromise = new Promise(async (resolve, reject) => {
 
-				    			await MongoClient.connect(MongoUrl, function(err, db) {
-								  if (err) throw err;
-								  var dbo = db.db("datacenter-db");
-								  var collection = dbo.collection("peoples");
+				    			var query = { linkedin_url: data.linkedin_url };
 
-								  var query = { linkedin_url: data.linkedin_url };
-								  // console.log(query);
-
-								  collection.find(query).limit(1).next(function(err, result) {
-								  	// console.log(result);
-								  	if(!result)
-								  	{
-								  		data.dumpFile = element.Key;
-								  		collection.insertOne(data, function(err, res) {
-									    if (err) throw err;
-									    	console.log(data.linkedin_url + " inserted");
-									    	console.log(element.Key);
-									    	db.close();
-									 	});
-								  	}	
-								  	else
-								  	{
-									 	data.dumpFile = element.Key;
-									 	var newvalues = { $set: data };
-
-								  		collection.updateOne(query, newvalues, function(err, res) {
+				    			PeopleCollection.findOne(query, function (err, result) {
+								    if (err){
+								        console.log(err)
+								    }
+								    else{
+								        if(!result)
+								        {
+								        	data.dumpFile = element.Key;
+									  		PeopleCollection.insertOne(data, function(err, res) {
 										    if (err) throw err;
-										    console.log(data.linkedin_url + " updated");
-										    console.log(element.Key);
-										    db.close();
-										});
-								  	}
-								  });
-								  
+										    	console.log(data.linkedin_url + " inserted");
+										    	console.log(element.Key);
+										 	});
+								        }
+								        else
+								        {
+								        	data.dumpFile = element.Key;
+										 	var newvalues = { $set: data };
+
+									  		PeopleCollection.updateOne(query, newvalues, function(err, res) {
+											    if (err) throw err;
+											    console.log(data.linkedin_url + " updated");
+											    console.log(element.Key);
+											});
+								        }
+								    }
 								});
 				    		});
 
