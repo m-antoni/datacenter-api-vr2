@@ -168,7 +168,9 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 
 		    // promises.push(newPromise);
 
-		    await newPromise.then(() => {
+		    await newPromise.catch(function(err){
+    			console.log(err);
+			}).then(() => {
 		    	console.log("Processing Promise");
 		    });
 		 }
