@@ -23,7 +23,7 @@ const s3 = new S3({
 
 var bucketParams = {
   Bucket : bucketName,
-  Prefix: "1/"
+  Prefix: "2/"
 };
 
 let settings = { method: "Get" };
