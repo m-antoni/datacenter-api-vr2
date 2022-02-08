@@ -77,70 +77,14 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 		        .on('error', (error) => {
 		        	console.log('error writing');
 		            return reject(error);
-		        }).pipe(JSONStream.parse('*')).pipe(es.map((data, callback) => {
-		        	// console.log(data);
-			      	if(data.location_country != null) 
-			      	{
-			      		let insert = 0;
-			      		// emails
-				    	if(data.location_country == 'united states')
-				    	{
-				    		location_country["US"] += 1;
-
-				    		if(data.emails)
-				    		{
-				    			location_country["US With Email"] += 1;
-				    			insert = 1;
-				    		}
-				    		else if (data.mobile_numbers)
-				    		{
-				    			location_country["US With Mobile/Phone"] += 1;
-				    			insert = 1;
-				    		}
-				    		else if( data.phone_numbers)
-				    		{
-				    			location_country["US With Mobile/Phone"] += 1;
-				    			insert = 1;
-				    		}
-				    		else
-				    		{
-				    			location_country["US No Email/Mobile/Phone"] += 1;
-				    		}
-				    	}
-				    	else
-				    	{
-				    		location_country["other country"] += 1;
-				    	}
-
-				    	if(insert == 1)
-				    	{
-				    		
-
-				    		var InsertPromise = new Promise(async (resolve, reject) => {
-
-				    			var query = { linkedin_url: data.linkedin_url };
-				    			console.log(data.linkedin_url + " Preparing to insert");
-				    		 	await PeopleCollection.create(data, function(err, res) {
-							    if (err) throw err;
-							    	console.log(data.linkedin_url + " inserted");
-							    	console.log(element.Key);
-							 	});
-				    		});
-
-				    		InsertPromise.catch(function(err){
-				    			console.log(err);
-							}).then(() => {
-						    	console.log("Insert Promise");
-						    });
-				    	}
-					} 
-					else 
-					{
-				    	location_country["other country"] += 1;
-				    }
-				    // console.log(params);
-				    // console.log(location_country);
-			    }));
+		        }).pipe(JSONStream.parse('*')).on('data', async (data) => {
+				  	data.dumpFile = element.Key;
+			  		await PeopleCollection.create(data, function(err, res) {
+				    if (err) throw err;
+				    	console.log(data.linkedin_url + " inserted");
+				    	console.log(element.Key);
+				 	});
+				});
 		        // .pipe(file);
 
 		    });
