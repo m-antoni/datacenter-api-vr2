@@ -77,7 +77,8 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 		        .on('error', (error) => {
 		        	console.log('error writing');
 		            return reject(error);
-		        }).pipe(JSONStream.parse('*')).on('data', async (data) => {
+		        }).pipe(JSONStream.parse('*'))
+		        .on('data',  (data) => {
 				  	data.dumpFile = element.Key;
 			  		
 
@@ -114,7 +115,9 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 
 			    	if(insert == 1)
 			    	{
-			    		await PeopleCollection.create(data, function(err, res) {
+			    		console.log(data.linkedin_url + "Preparing to inserted");
+
+			    		PeopleCollection.create(data, function(err, res) {
 					    if (err) throw err;
 					    	console.log(data.linkedin_url + " inserted");
 					    	console.log(element.Key);
