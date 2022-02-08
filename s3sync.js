@@ -65,7 +65,7 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 		    var newPromise = new Promise(async (resolve, reject) => {
 
 		    	mongoose.connect('mongodb+srv://datacenter-user03:80YWAXIohLbFeZel@talently-cluster01.lavtd.mongodb.net/datacenter-db');
-
+		    	mongoose.models = {};
 				const PeoplesSchema = new Schema({}, { strict: false })
 				const PeopleCollection = mongoose.model('peoples', PeoplesSchema)
 
