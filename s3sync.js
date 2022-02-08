@@ -120,7 +120,7 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 
 				    			var query = { linkedin_url: data.linkedin_url };
 				    			console.log(data.linkedin_url + " Preparing to insert");
-				    			PeopleCollection.findOne(query, function (err, result) {
+				    			await PeopleCollection.findOne(query, async function (err, result) {
 								    if (err){
 								        console.log(err)
 								    }
@@ -128,7 +128,7 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 								        if(!result)
 								        {
 								        	data.dumpFile = element.Key;
-									  		PeopleCollection.insertOne(data, function(err, res) {
+									  		await PeopleCollection.insertOne(data, function(err, res) {
 										    if (err) throw err;
 										    	console.log(data.linkedin_url + " inserted");
 										    	console.log(element.Key);
