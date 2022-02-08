@@ -43,7 +43,6 @@ let countPerURL =  new Object();
 // var presignedURL = null;
 s3.listObjects(bucketParams, function(err, bucketList) {
 	objectList = bucketList.Contents;
-	console.log(objectList);
 	const forLoop = async (bruh) => {
 	  for (const element of objectList) {
 	  	console.log('get url');
@@ -120,7 +119,7 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 				    		var InsertPromise = new Promise(async (resolve, reject) => {
 
 				    			var query = { linkedin_url: data.linkedin_url };
-
+				    			console.log(data.linkedin_url + " Preparing to insert");
 				    			PeopleCollection.findOne(query, function (err, result) {
 								    if (err){
 								        console.log(err)
@@ -133,24 +132,19 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 										    if (err) throw err;
 										    	console.log(data.linkedin_url + " inserted");
 										    	console.log(element.Key);
-										 	});
-								        }
-								        else
-								        {
-								        	data.dumpFile = element.Key;
-										 	var newvalues = { $set: data };
-
-									  		PeopleCollection.updateOne(query, newvalues, function(err, res) {
-											    if (err) throw err;
-											    console.log(data.linkedin_url + " updated");
-											    console.log(element.Key);
+										 	}).catch(function(err){
+								    			console.log(err);
 											});
 								        }
 								    }
 								});
-				    		});
+				    		}).catch(function(err){
+				    			console.log(err);
+							});
 
-				    		InsertPromise.then(() => {
+				    		InsertPromise.catch(function(err){
+				    			console.log(err);
+							}).then(() => {
 						    	console.log("Insert Promise");
 						    });
 				    	}
