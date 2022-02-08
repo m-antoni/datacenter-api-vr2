@@ -66,7 +66,7 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 		    	mongoose.connect('mongodb+srv://datacenter-user03:80YWAXIohLbFeZel@talently-cluster01.lavtd.mongodb.net/datacenter-db');
 		    	mongoose.models = {};
 				const PeoplesSchema = new Schema({}, { strict: false })
-				const PeopleCollection = mongoose.model('peoples-live', PeoplesSchema)
+				const PeopleCollection = mongoose.model('peoples', PeoplesSchema)
 
 		    	console.log('promise');
 		        await s3.getObject(params).createReadStream()
@@ -120,7 +120,7 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 
 				    			var query = { linkedin_url: data.linkedin_url };
 				    			console.log(data.linkedin_url + " Preparing to insert");
-				    			await PeopleCollection.findOne(query, async function (err, result) {
+				    		 	PeopleCollection.findOne(query, async function (err, result) {
 								    if (err){
 								        console.log(err)
 								    }
@@ -128,19 +128,15 @@ s3.listObjects(bucketParams, function(err, bucketList) {
 								        if(!result)
 								        {
 								        	data.dumpFile = element.Key;
-									  		await PeopleCollection.insertOne(data, function(err, res) {
+									  		await PeopleCollection.create(data, function(err, res) {
 										    if (err) throw err;
 										    	console.log(data.linkedin_url + " inserted");
 										    	console.log(element.Key);
-										 	}).catch(function(err){
-								    			console.log(err);
-											});
+										 	});
 								        }
 								    }
 								});
-				    		}).catch(function(err){
-				    			console.log(err);
-							});
+				    		});
 
 				    		InsertPromise.catch(function(err){
 				    			console.log(err);
