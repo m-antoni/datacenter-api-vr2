@@ -11,7 +11,8 @@ const CollectionSettingSchema = new Schema(
     },
     {
         versionKey: false // get rid of _v:0 field
-    }
+    },
+    // { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
 )
 
 CollectionSettingSchema.plugin(aggregatePaginate);
