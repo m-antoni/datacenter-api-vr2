@@ -5,6 +5,7 @@ interface SearchQuery {
     linkedin_url?: string;
     job_title?: string;
     job_company_name?: string;
+    full_name?: string;
     first_name?: string;
     last_name?: string;
     summary?: string | boolean;

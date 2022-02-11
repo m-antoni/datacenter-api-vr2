@@ -17,7 +17,7 @@ class PeopleService {
     /** Search User  */
     public async searchByUserService(args: SearchQuery) : Promise<Object> {
     
-        let { first_name, last_name, linkedin_url, job_title, job_company_name, search_text, sortby, options } = args; 
+        let { full_name, first_name, last_name, linkedin_url, job_title, job_company_name, search_text, sortby, options } = args; 
 
         let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
 
@@ -25,7 +25,7 @@ class PeopleService {
 
         try {
 
-            if(linkedin_url || first_name)
+            if(linkedin_url || first_name || full_name)
             {
                 pipeline = [
                     {
@@ -48,6 +48,15 @@ class PeopleService {
                                         { job_company_name: job_company_name }
                                    ]
                                 },
+                                {
+                                    $and: [
+                                         { location_country: this.default_country },
+                                         { archive: { $exists: false } },
+                                         { full_name: full_name },
+                                         { job_title: job_title },
+                                         { job_company_name: job_company_name }
+                                    ]
+                                 },
                             ],
                         }, 
                     },
