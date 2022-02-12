@@ -20,12 +20,11 @@ class PeopleService {
         let { full_name, first_name, last_name, linkedin_url, job_title, job_company_name, search_text, sortby, options } = args; 
 
         let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
-
-        let pipeline;
+        let pipeline: any;
 
         try {
 
-            if(linkedin_url || first_name || full_name)
+            if(first_name || full_name)
             {
                 pipeline = [
                     {
@@ -34,33 +33,42 @@ class PeopleService {
                                 {
                                     $and: [
                                         { location_country: this.default_country },
-                                        { linkedin_url: linkedin_url }
-                                    ],
-                                    archive: { $exists: false }
-                                },
-                                {
-                                   $and: [
-                                        { location_country: this.default_country },
                                         { archive: { $exists: false } },
                                         { first_name: first_name },
                                         { last_name: last_name },
                                         { job_title: job_title },
                                         { job_company_name: job_company_name }
-                                   ]
+                                    ]
                                 },
                                 {
                                     $and: [
-                                         { location_country: this.default_country },
-                                         { archive: { $exists: false } },
-                                         { full_name: full_name },
-                                         { job_title: job_title },
-                                         { job_company_name: job_company_name }
+                                        { location_country: this.default_country },
+                                        { archive: { $exists: false } },
+                                        { full_name: full_name },
+                                        { job_title: job_title },
+                                        { job_company_name: job_company_name }
                                     ]
-                                 },
+                                },
                             ],
                         }, 
                     },
                     { $sort: { _id: sortVal }},
+                ];
+            }
+            else if(linkedin_url)
+            {
+                // THIS IS DEDICATED ONLY FOR LINKEDIN_URL THIS IS UPDATED QUERY CANNOT ADD WITH ANOTHER {OR} FROM ABOVE
+                pipeline = [
+                    { 
+                        $match: { 
+                            $and: [
+                                { location_country: this.default_country },
+                                { linkedin_url: linkedin_url },
+                                { archive: { $exists: false }}
+                            ],
+                        }, 
+                    },
+                    { $sort: { _id: sortVal }}
                 ];
             }
             else if(search_text)
@@ -120,11 +128,17 @@ class PeopleService {
                 ];
             }
          
-            const aggregate = this.people.aggregate(pipeline);
+            let aggregate = this.people.aggregate(pipeline);
 
             const aggregatePaginate = await this.people.aggregatePaginate(aggregate, options)
 
             return aggregatePaginate;
+
+            // const userData: any = PeopleModel.findOne({linkedin_url: linkedin_url});
+
+            // const aggregatePaginate = await this.people.aggregatePaginate(userData, options)
+
+            // return aggregatePaginate;
 
         } catch (error) {
             console.log(error)
