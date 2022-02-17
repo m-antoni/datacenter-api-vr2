@@ -1,7 +1,5 @@
 import PeopleModel from '@/resources/people/people.model';
 import People from '@/resources/people/people.interface';
-import SeachQuery from './interfaces/people.searchquery.interface';
-import { link, number, string } from 'joi';
 import SearchQuery from './interfaces/people.searchquery.interface';
 
 enum SortBy {
@@ -21,9 +19,9 @@ class PeopleService {
 
         let sortVal = sortby === "asc" ? SortBy.asc : SortBy.desc;
         let pipeline: any;
-
+        
         try {
-
+            
             if(first_name || full_name)
             {
                 pipeline = [

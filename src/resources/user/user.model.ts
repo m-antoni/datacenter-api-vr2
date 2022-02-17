@@ -28,8 +28,8 @@ const UserSchema = new Schema(
             required: true,
         },
     },
-    { timestamps: true }
-    // { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
+    { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } }
+    // { timestamps: true },
 );
 
 UserSchema.pre<User>('save', async function (next) {
