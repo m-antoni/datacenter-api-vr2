@@ -32,6 +32,7 @@ class PeopleController implements Controller {
         this.router.post(`${this.path}/user/archive-or-restore`, authenticated, this.archivedOrRestoreUser);
         this.router.post(`${this.path}/user/insert-excel`, authenticated, this.insertExcelData);
         this.router.get(`${this.path}/user/summary`, authenticated, this.getSummary);
+        this.router.get(`${this.path}/`, this.appInfo);
     }
     
     private searchByUser = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -177,6 +178,24 @@ class PeopleController implements Controller {
             console.log(error)
             next(new HttpException(400, 'Cannot get the summary.'));
             
+        }
+    }
+
+
+    /** App Informartion */
+    private appInfo = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+        try {
+
+            const data = {
+                version: 'version 2',
+                description: 'using Node TypeScript and MongoDB Aggregation Framework',
+                status: 'Success'
+            }
+
+            res.status(200).json(data);
+
+        } catch (error) {
+            next(new HttpException(500, 'Server Error something went wrong.'));
         }
     }
 
